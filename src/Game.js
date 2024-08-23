@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { RoadSet } from './RoadSet.js';
 import { Soldier } from './Soldier.js';
+import { Character } from './Character.js';
 
 export class Game {
     constructor(textureLoader, scene) {
@@ -11,6 +12,12 @@ export class Game {
 
         this.initSoldiers();
         this.initRoadSets();
+        this.initCharacter();
+    }
+
+    initCharacter() {
+        this.character = new Character();
+        this.scene.add(this.character.mesh);
     }
 
     // Initialize soldiers and add them to the scene
@@ -40,7 +47,6 @@ export class Game {
         }
     }
 
-    // Animate the game elements
     animate() {
         const speed = 0.15;
         this.roadSets.forEach((roadSet) => roadSet.move(speed));

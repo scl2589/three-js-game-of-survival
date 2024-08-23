@@ -42,7 +42,7 @@ function initGame() {
      * Camera
      */
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 20, 800);
+    camera.position.set(0, 200, 800);
     gameScene.add(camera);
 
     /**
@@ -75,6 +75,10 @@ function initGame() {
 
     function animate() {
         if (currentScene !== gameScene) return;
+
+        // Move character
+        if (keys['ArrowLeft']) game.character.move('left');
+        if (keys['ArrowRight']) game.character.move('right');
 
         moveSoldiers(game.soldiers); // Pass the soldiers group to the movement function
         game.animate(); // Animate the road sets
@@ -110,9 +114,18 @@ function initGame() {
     /**
      * Soldiers Movement Logic
      */
-    const keys = {};
+    let keys = {};
     document.addEventListener('keydown', (e) => {
-        keys[e.key] = true;
+        switch (e.key) {
+            case "ArrowLeft":
+                // Left pressed
+                keys[e.key] = 'ArrowLeft'
+                break;
+            case "ArrowRight":
+                // Right pressed
+                keys[e.key] = 'ArrowRight'
+                break;
+        }
     });
 
     document.addEventListener('keyup', (e) => {
@@ -120,19 +133,6 @@ function initGame() {
     });
 
     function moveSoldiers(soldiers) {
-        const redSoldier = soldiers.getObjectByName('RedSoldier');
-        const blueSoldier = soldiers.getObjectByName('BlueSoldier');
-
-        if (keys['w']) redSoldier.position.z -= 0.1;
-        if (keys['s']) redSoldier.position.z += 0.1;
-        if (keys['a']) redSoldier.position.x -= 0.1;
-        if (keys['d']) redSoldier.position.x += 0.1;
-
-        if (keys['ArrowUp']) blueSoldier.position.z -= 0.1;
-        if (keys['ArrowDown']) blueSoldier.position.z += 0.1;
-        if (keys['ArrowLeft']) blueSoldier.position.x -= 0.1;
-        if (keys['ArrowRight']) blueSoldier.position.x += 0.1;
-
         // Move all soldiers forward
         soldiers.children.forEach((s) => {
             s.position.z += 0.5;
