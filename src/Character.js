@@ -13,11 +13,11 @@ export class Character {
         switch (direction) {
             case 'left':
                 if (this.mesh.position.x <= -8) return;
-                this.mesh.position.x -= 1;
+                this.mesh.position.x -= 0.5;
                 break;
             case 'right':
                 if (this.mesh.position.x >= 8) return;
-                this.mesh.position.x += 1;
+                this.mesh.position.x += 0.5;
                 break;
         }
     }

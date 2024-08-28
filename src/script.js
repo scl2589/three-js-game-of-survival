@@ -9,10 +9,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.querySelector('canvas.webgl');
 
     startButton.addEventListener('click', () => {
-        startButton.style.display = 'none'; // Hide the button
-        canvas.style.display = 'block'; // Show the canvas
+        startButton.style.display = 'none';
+        canvas.style.display = 'block';
 
-        initGame(); // Initialize the game after button click
+        initGame();
     });
 });
 
@@ -73,17 +73,6 @@ function initGame() {
      */
     const game = new Game(textureLoader, gameScene);
 
-    function animate() {
-        if (currentScene !== gameScene) return;
-
-        // Move character
-        if (keys['ArrowLeft']) game.character.move('left');
-        if (keys['ArrowRight']) game.character.move('right');
-
-        moveSoldiers(game.soldiers); // Pass the soldiers group to the movement function
-        game.animate(); // Animate the road sets
-    }
-
     /**
      * Sizes
      */
@@ -93,21 +82,18 @@ function initGame() {
     };
 
     window.addEventListener('resize', () => {
-        // Update sizes
         sizes.width = window.innerWidth;
         sizes.height = window.innerHeight;
 
-        // Update camera
         camera.aspect = sizes.width / sizes.height;
         camera.updateProjectionMatrix();
 
-        // Update renderer
         renderer.setSize(sizes.width, sizes.height);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     });
 
     /**
-     * Define Current Scene
+     * 현재 Scene
      */
     let currentScene = gameScene; // Set the initial scene
 
@@ -149,22 +135,21 @@ function initGame() {
      * Animate Loop
      */
     const clock = new THREE.Clock();
-
-    const tick = () => {
+    function animate() {
         const elapsedTime = clock.getElapsedTime();
+        if (currentScene !== gameScene) return;
 
-        // Update controls
+        // Move character
+        if (keys['ArrowLeft']) game.character.move('left');
+        if (keys['ArrowRight']) game.character.move('right');
+
+        moveSoldiers(game.soldiers);
+        game.animate(elapsedTime * 1000);
+
         controls.update();
-
-        // Animate
-        animate();
-
-        // Render the current scene
         renderer.render(currentScene, camera);
+        requestAnimationFrame(animate);
+    }
 
-        // Call tick again on the next frame
-        window.requestAnimationFrame(tick);
-    };
-
-    tick();
+    animate();
 }

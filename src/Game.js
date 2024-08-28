@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import { RoadSet } from './RoadSet.js';
 import { Soldier } from './Soldier.js';
 import { Character } from './Character.js';
+import {Banner} from './Banner.js'
+
 
 export class Game {
     constructor(textureLoader, scene) {
@@ -9,6 +11,9 @@ export class Game {
         this.scene = scene;
         this.roadSets = [];
         this.soldiers = new THREE.Group();
+        this.banners = [];
+        this.lastBannerTime = 0;
+        this.bannerInterval = 2500; // 2.5seconds
 
         this.initSoldiers();
         this.initRoadSets();
@@ -47,8 +52,45 @@ export class Game {
         }
     }
 
-    animate() {
+    createBanner() {
+        const colors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00];
+        const color = colors[Math.floor(Math.random() * colors.length)];
+
+        const values = ['x3', '-3', '+1'];
+        const value = values[Math.floor(Math.random() * values.length)];
+
+        const banner = new Banner(color, value);
+        banner.mesh.position.set(Math.random() * 16 - 8, 2, -200); // Random x position
+        this.banners.push(banner);
+        this.scene.add(banner.mesh);
+    }
+
+    // animate() {
+    //     const speed = 0.15;
+    //     this.roadSets.forEach((roadSet) => roadSet.move(speed));
+    // }
+
+    animate(time) {
         const speed = 0.15;
         this.roadSets.forEach((roadSet) => roadSet.move(speed));
+
+        // Check if it's time to create new banners
+        if (time - this.lastBannerTime > this.bannerInterval) {
+            this.createBanner();
+            this.createBanner();
+            this.lastBannerTime = time;
+        }
+
+        // Move banners
+        const bannerSpeed = 0.5;
+        this.banners.forEach((banner, index) => {
+            banner.mesh.position.z += bannerSpeed;
+
+            // Remove banner if it's passed the camera
+            if (banner.mesh.position.z > 10) {
+                this.scene.remove(banner.mesh);
+                this.banners.splice(index, 1);
+            }
+        });
     }
 }
