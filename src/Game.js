@@ -56,19 +56,16 @@ export class Game {
         const colors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00];
         const color = colors[Math.floor(Math.random() * colors.length)];
 
-        const values = ['x3', '-3', '+1'];
-        const value = values[Math.floor(Math.random() * values.length)];
 
-        const banner = new Banner(color, value);
+        const operators = ['x', '+', '-', '÷'];
+        const value = Math.ceil(Math.random() * 10);
+        const operator = operators[Math.floor(Math.random() * operators.length)];
+
+        const banner = new Banner(color, operator, value);
         banner.mesh.position.set(Math.random() * 16 - 8, 2, -200); // Random x position
         this.banners.push(banner);
         this.scene.add(banner.mesh);
     }
-
-    // animate() {
-    //     const speed = 0.15;
-    //     this.roadSets.forEach((roadSet) => roadSet.move(speed));
-    // }
 
     animate(time) {
         const speed = 0.15;
