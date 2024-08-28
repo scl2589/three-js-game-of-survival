@@ -38,9 +38,13 @@ export class Banner {
                 size: 1.8,
                 depth: 0.1,
             })
+            textGeometry.computeBoundingBox();
+            const textWidth = textGeometry.boundingBox.max.x - textGeometry.boundingBox.min.x;
+
+
             const textMaterial = new THREE.MeshBasicMaterial({ color: 0x000000})
             const textMesh = new THREE.Mesh(textGeometry, textMaterial);
-            textMesh.position.set(-1.5, -0.5, 0.1);
+            textMesh.position.set(-textWidth/2, -0.5, 0.1);
             plane.add(textMesh);
         })
     }
