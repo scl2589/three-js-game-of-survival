@@ -61,13 +61,18 @@ export class Game {
         const [x1, x2] = Banner.getNonOverlappingPositions(minX, maxX, minDistance);
 
         const banner1 = new Banner();
-        banner1.mesh.position.set(x1, 2, -200)
+        banner1.mesh.position.set(x1, 2, 0)
 
         const banner2 = new Banner();
-        banner2.mesh.position.set(x2, 2, -200)
+        banner2.mesh.position.set(x2, 2, 0)
 
-        this.banners.push(banner1, banner2);
-        this.scene.add(banner1.mesh, banner2.mesh);
+        const bannerGroup = new THREE.Group();
+        bannerGroup.position.z = -200
+
+        bannerGroup.add(banner1.mesh, banner2.mesh)
+
+        this.banners.push(bannerGroup);
+        this.scene.add(bannerGroup);
     }
 
     animate(time) {
@@ -82,14 +87,15 @@ export class Game {
 
         // Move banners
         const bannerSpeed = 0.5;
-        this.banners.forEach((banner, index) => {
-            banner.mesh.position.z += bannerSpeed;
-
+        for (let i = this.banners.length - 1; i >= 0; i--) {
+            const bannerGroup = this.banners[i];
+            bannerGroup.position.z += bannerSpeed;
+            
             // Remove banner if it's passed the character's position + 5
-            if (banner.mesh.position.z > this.character.mesh.position.z + 5) {
-                this.scene.remove(banner.mesh);
-                this.banners.splice(index, 1);
+            if (bannerGroup.position.z > this.character.mesh.position.z + 5) {
+                this.scene.remove(bannerGroup);
+                this.banners.splice(i, 1);
             }
-        });
+        };
     }
 }
