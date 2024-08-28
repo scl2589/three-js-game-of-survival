@@ -36,8 +36,7 @@ export class Banner {
             })
             const textMaterial = new THREE.MeshBasicMaterial({ color: 0x000000})
             const textMesh = new THREE.Mesh(textGeometry, textMaterial);
-            textMesh.position.set(-1.8, -0.5, 0.1);
-            // textMesh.rotation.y = Math.PI * 0.5;
+            textMesh.position.set(-1.5, -0.5, 0.1);
             banner.add(textMesh);
         })
 

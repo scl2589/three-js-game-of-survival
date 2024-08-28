@@ -58,7 +58,7 @@ export class Game {
 
 
         const operators = ['x', '+', '-', '÷'];
-        const value = Math.ceil(Math.random() * 10);
+        const value = Math.ceil(Math.random() * 9);
         const operator = operators[Math.floor(Math.random() * operators.length)];
 
         const banner = new Banner(color, operator, value);
@@ -83,8 +83,8 @@ export class Game {
         this.banners.forEach((banner, index) => {
             banner.mesh.position.z += bannerSpeed;
 
-            // Remove banner if it's passed the camera
-            if (banner.mesh.position.z > 10) {
+            // Remove banner if it's passed the character's position + 5
+            if (banner.mesh.position.z > this.character.mesh.position.z + 5) {
                 this.scene.remove(banner.mesh);
                 this.banners.splice(index, 1);
             }
