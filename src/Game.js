@@ -52,19 +52,22 @@ export class Game {
         }
     }
 
-    createBanner() {
-        const colors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00];
-        const color = colors[Math.floor(Math.random() * colors.length)];
+    createBanners() {
+        const minX = -10;
+        const maxX = 5;
+        const bannerWidth = 5;
+        const minDistance = bannerWidth + 1; // buffer in between the banners
 
+        const [x1, x2] = Banner.getNonOverlappingPositions(minX, maxX, minDistance);
 
-        const operators = ['x', '+', '-', '÷'];
-        const value = Math.ceil(Math.random() * 9);
-        const operator = operators[Math.floor(Math.random() * operators.length)];
+        const banner1 = new Banner();
+        banner1.mesh.position.set(x1, 2, -200)
 
-        const banner = new Banner(color, operator, value);
-        banner.mesh.position.set(Math.random() * 16 - 8, 2, -200); // Random x position
-        this.banners.push(banner);
-        this.scene.add(banner.mesh);
+        const banner2 = new Banner();
+        banner2.mesh.position.set(x2, 2, -200)
+
+        this.banners.push(banner1, banner2);
+        this.scene.add(banner1.mesh, banner2.mesh);
     }
 
     animate(time) {
@@ -73,8 +76,7 @@ export class Game {
 
         // Check if it's time to create new banners
         if (time - this.lastBannerTime > this.bannerInterval) {
-            this.createBanner();
-            this.createBanner();
+            this.createBanners();
             this.lastBannerTime = time;
         }
 
