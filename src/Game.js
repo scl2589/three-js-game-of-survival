@@ -14,7 +14,7 @@ export class Game {
         this.banners = [];
         this.lastBannerTime = 0;
         this.bannerInterval = 2500; // 2.5 seconds
-        this.score = 0;
+        this.score = 10;
 
         this.initSoldiers();
         this.initRoadSets();
