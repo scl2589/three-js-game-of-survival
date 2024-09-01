@@ -13,7 +13,8 @@ export class Game {
         this.soldiers = new THREE.Group();
         this.banners = [];
         this.lastBannerTime = 0;
-        this.bannerInterval = 2500; // 2.5seconds
+        this.bannerInterval = 2500; // 2.5 seconds
+        this.score = 0;
 
         this.initSoldiers();
         this.initRoadSets();
@@ -75,6 +76,31 @@ export class Game {
         this.scene.add(bannerGroup);
     }
 
+    updateScoreDisplay() {
+        const scoreElement = document.getElementById('score');
+        scoreElement.textContent = `Score: ${this.score.toFixed(1)}`;
+    }
+
+    calculateScore(operator, value) {
+        switch (operator) {
+            case '+':
+                this.score += value;
+                break;
+            case '-':
+                this.score -= value;
+                break;
+            case 'x':
+                this.score *= value;
+                break;
+            case '÷':
+                this.score /= value;
+                break;
+        }
+
+        // Update the score
+        this.updateScoreDisplay();
+    }
+
     animate(time) {
         const speed = 0.15;
         this.roadSets.forEach((roadSet) => roadSet.move(speed));
@@ -90,7 +116,18 @@ export class Game {
         for (let i = this.banners.length - 1; i >= 0; i--) {
             const bannerGroup = this.banners[i];
             bannerGroup.position.z += bannerSpeed;
-            
+
+            // Check collision of each banner with the character
+            for (let i = 0; i < bannerGroup.children.length; i++) {
+                const banner = bannerGroup.children[i];
+                if (bannerGroup.position.z === this.character.mesh.position.z && this.character.checkCollision(banner)) {
+                    bannerGroup.remove(banner);
+                    const bannerValue = banner.value;
+                    const bannerOperator = banner.operator;
+                    this.calculateScore(bannerOperator, bannerValue)
+                }
+            }
+
             // Remove banner if it's passed the character's position + 5
             if (bannerGroup.position.z > this.character.mesh.position.z + 5) {
                 this.scene.remove(bannerGroup);

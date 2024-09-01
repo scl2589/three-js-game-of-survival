@@ -26,12 +26,12 @@ export class Banner {
 
         this.mesh.add(flag1, flag2, plane);
 
-        this.operator = this.getRandomOperator();
-        this.value = this.getRandomValue();
+        this.mesh.operator = this.getRandomOperator();
+        this.mesh.value = this.getRandomValue();
 
         // Add text to the banner
         const loader  = new FontLoader();
-        const textValue = `${this.operator}${this.value}`
+        const textValue = `${this.mesh.operator}${this.mesh.value}`
         loader.load('/fonts/optimer_bold.typeface.json', font => {
             const textGeometry = new TextGeometry(textValue, {
                 font: font,

@@ -21,4 +21,11 @@ export class Character {
                 break;
         }
     }
+
+    checkCollision(object) {
+        const characterBox = new THREE.Box3().setFromObject(this.mesh);
+        const objectBox = new THREE.Box3().setFromObject(object);
+        console.log(objectBox)
+        return characterBox.intersectsBox(objectBox);
+    }
 }
