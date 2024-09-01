@@ -15,6 +15,8 @@ export class Game {
         this.lastBannerTime = 0;
         this.bannerInterval = 2500; // 2.5 seconds
         this.score = 10;
+        this.clock = new THREE.Clock(); // Initialize the clock here
+
 
         this.initSoldiers();
         this.initRoadSets();
@@ -81,7 +83,7 @@ export class Game {
         scoreElement.textContent = `Score: ${this.score.toFixed(1)}`;
     }
 
-    calculateScore(operator, value) {
+    async calculateScore(operator, value) {
         switch (operator) {
             case '+':
                 this.score += value;
@@ -97,17 +99,21 @@ export class Game {
                 break;
         }
 
-        if (this.score <= 0) {
-            window.alert("Game Over!\nThe game will restart once the alert is closed.");
-            this.resetGame();
-            return;
-        }
-
         // Update the score
         this.updateScoreDisplay();
+
+        if (this.score <= 0) {
+            setTimeout(() => {
+                window.alert("Game Over!\nThe game will restart once the alert is closed.");
+                this.resetGame();
+            })
+        }
     }
 
     resetGame() {
+        // Reset start time
+        this.clock = new THREE.Clock();
+
         // Reset score
         this.score = 10;
         this.updateScoreDisplay();
@@ -137,11 +143,24 @@ export class Game {
 
         // Reset the last banner creation time
         this.lastBannerTime = 0;
+        this.bannerInterval = 2500;
     }
 
-    animate(time) {
-        const speed = 0.15;
-        this.roadSets.forEach((roadSet) => roadSet.move(speed));
+    animate() {
+        const elapsedTime = this.clock.getElapsedTime(); // Use the clock in the game instance
+        const time = elapsedTime * 1000
+
+        const baseSpeed = 0.15;
+        // const timeFactor = 0.00001;
+        // const speed = baseSpeed + time * timeFactor;
+        // this.roadSets.forEach((roadSet) => roadSet.move(speed));
+        this.roadSets.forEach((roadSet) => roadSet.move(baseSpeed))
+
+        const initialInterval = 2500
+        const minInterval = 500;
+        const timeFactor = 0.1
+
+        this.bannerInterval =  Math.max(initialInterval - time * timeFactor, minInterval);
 
         // Check if it's time to create new banners
         if (time - this.lastBannerTime > this.bannerInterval) {

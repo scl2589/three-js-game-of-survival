@@ -134,9 +134,7 @@ function initGame() {
     /**
      * Animate Loop
      */
-    const clock = new THREE.Clock();
     function animate() {
-        const elapsedTime = clock.getElapsedTime();
         if (currentScene !== gameScene) return;
 
         // Move character
@@ -144,7 +142,7 @@ function initGame() {
         if (keys['ArrowRight']) game.character.move('right');
 
         moveSoldiers(game.soldiers);
-        game.animate(elapsedTime * 1000);
+        game.animate();
 
         controls.update();
         renderer.render(currentScene, camera);
