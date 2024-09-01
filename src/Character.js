@@ -6,7 +6,8 @@ export class Character {
         const characterMaterial = new THREE.MeshBasicMaterial({ color: 'green' });
 
         this.mesh = new THREE.Mesh(characterGeometry, characterMaterial);
-        this.mesh.position.set(0, 2, 30)
+        this.initialPosition = new THREE.Vector3(0, 2, 30);
+        this.mesh.position.copy(this.initialPosition);
     }
 
     move(direction) {
@@ -26,5 +27,9 @@ export class Character {
         const characterBox = new THREE.Box3().setFromObject(this.mesh);
         const objectBox = new THREE.Box3().setFromObject(object);
         return characterBox.intersectsBox(objectBox);
+    }
+
+    resetPosition() {
+        this.mesh.position.copy(this.initialPosition);
     }
 }

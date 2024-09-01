@@ -97,8 +97,46 @@ export class Game {
                 break;
         }
 
+        if (this.score <= 0) {
+            window.alert("Game Over!\nThe game will restart once the alert is closed.");
+            this.resetGame();
+            return;
+        }
+
         // Update the score
         this.updateScoreDisplay();
+    }
+
+    resetGame() {
+        // Reset score
+        this.score = 10;
+        this.updateScoreDisplay();
+
+        // Remove all existing banners
+        this.banners.forEach((bannerGroup) => {
+            this.scene.remove(bannerGroup);
+        });
+        this.banners = [];
+
+        // Remove all soldiers
+        this.soldiers.children.forEach((soldier) => {
+            this.scene.remove(soldier);
+        });
+        this.soldiers.clear();
+
+        // Remove all road sets
+        this.roadSets.forEach((roadSet) => {
+            this.scene.remove(roadSet.group);
+        });
+        this.roadSets = [];
+
+        // Re-initialize game elements
+        this.initSoldiers();
+        this.initRoadSets();
+        this.character.resetPosition(); // Optionally reset the character's position
+
+        // Reset the last banner creation time
+        this.lastBannerTime = 0;
     }
 
     animate(time) {
