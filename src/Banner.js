@@ -57,8 +57,7 @@ export class Banner {
     getRandomValue = () => Math.ceil(Math.random() * 9);
 
     getRandomColor = () => {
-        const colors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00];
-        return colors[Math.floor(Math.random() * colors.length)];
+        return '#'+(Math.random() * 0xFFFFFF << 0).toString(16).padStart(6, '0');
     }
 
     static getNonOverlappingPositions(minX, maxX, minDistance) {
