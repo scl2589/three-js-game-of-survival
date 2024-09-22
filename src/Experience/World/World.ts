@@ -47,7 +47,6 @@ export default class World {
     this.resources.on("ready", () => {
       // Setup
       this.initRoadSets();
-      this.initBanners();
       this.initEnemies();
       this.character = new Character();
       this.environment = new Environment();
