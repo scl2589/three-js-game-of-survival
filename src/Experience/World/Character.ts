@@ -67,7 +67,7 @@ export default class Character extends Animation {
       return;
     }
 
-    const debugFolder = this.debug.ui.addFolder("chunsik");
+    const debugFolder = this.debug.ui.addFolder("character");
     super.updateDebug(debugFolder);
 
     if (this.model) {

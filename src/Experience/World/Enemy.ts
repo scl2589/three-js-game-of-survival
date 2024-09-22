@@ -48,6 +48,18 @@ export default class Enemy extends Animation {
         super.update(this.time.delta * 0.001);
     }
 
+    static getNonOverlappingPositions(minX: number, maxX:number, minDistance:number) {
+        const getRandomX = (min:number, max: number) => Math.random() * (max - min) + min;
+        const x1 = getRandomX(minX, maxX);
+        let x2;
+
+        do {
+            x2 = getRandomX(minX, maxX);
+        } while (Math.abs(x1 - x2) < minDistance);
+
+        return [x1, x2];
+    }
+
     private _updateDebug() {
         if (!this.debug.ui) {
             return;

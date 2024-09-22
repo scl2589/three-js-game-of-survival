@@ -20,12 +20,14 @@ class CustomBanner extends THREE.Mesh {
 // Represents a group of banners
 class CustomBannerGroup extends THREE.Group {}
 
+class CustomEnemyGroup extends THREE.Group {}
+
 export default class World {
   experience: Experience;
-  roadSet?:RoadSet;
   banners: CustomBannerGroup[];
+  enemies: CustomEnemyGroup[];
   roadSets: RoadSet[];
-  chunsik?: Character;
+  character?: Character;
   enemy?: Enemy;
   environment?: Environment;
   lastBannerTime: number;
@@ -37,7 +39,7 @@ export default class World {
     this.experience = Experience.getInstance();
     this.roadSets = [];
     this.banners = [];
-    // this.banners = new THREE.Group();
+    this.enemies = [];
     this.score = 10;
     this.lastBannerTime = 0;
     this.bannerInterval = 2500; // 2.5 seconds
@@ -46,8 +48,8 @@ export default class World {
       // Setup
       this.initRoadSets();
       this.initBanners();
-      this.chunsik = new Character();
-      this.enemy = new Enemy();
+      this.initEnemies();
+      this.character = new Character();
       this.environment = new Environment();
     });
   }
@@ -63,16 +65,15 @@ export default class World {
       this.roadSets.forEach((roadSet: RoadSet) => roadSet.update(baseSpeed))
     }
 
-    if (this.chunsik) {
-      this.chunsik.update();
+    if (this.character) {
+      this.character.update();
     }
-
 
     if (this.enemy) {
       this.enemy.update();
     }
 
-    if (this.banners && this.chunsik && this.chunsik.model) {
+    if (this.banners && this.character && this.character.model) {
       const initialInterval = 2500
       const minInterval = 1000;
       const timeFactor = 0.1;
@@ -94,7 +95,7 @@ export default class World {
         // Check collision of each banner with the character
         for (let i = 0; i < bannerGroup.children.length; i++) {
           const banner = bannerGroup.children[i] as CustomBanner;
-          if (bannerGroup.position.z === this.chunsik.model.position.z && this.chunsik.checkCollision(banner)) {
+          if (bannerGroup.position.z === this.character.model.position.z && this.character.checkCollision(banner)) {
             bannerGroup.remove(banner);
             const bannerValue = banner.value;
             const bannerOperator = banner.operator;
@@ -103,7 +104,7 @@ export default class World {
         }
 
         // Remove banner if it's passed the character's position + 5
-        if (bannerGroup.position.z > this.chunsik.model.position.z + 5) {
+        if (bannerGroup.position.z > this.character.model.position.z + 5) {
           this.gameScene.remove(bannerGroup);
           this.banners.splice(i, 1);
         }
@@ -145,6 +146,33 @@ export default class World {
     bannerGroup.add(banner1.group, banner2.group);
     this.banners.push(bannerGroup)
     this.gameScene.add(bannerGroup);
+  }
+
+  initEnemies () {
+    const minX = -10;
+    const maxX = 5;
+    const enemyWidth = 5;
+    const minDistance = enemyWidth + 1; // buffer in between the enemies
+
+    const [x1, x2] = Enemy.getNonOverlappingPositions(minX, maxX, minDistance);
+
+    const enemy1 = new Enemy();
+    const enemy2 = new Enemy();
+
+    if (!(enemy1.model && enemy2.model)) {
+      return;
+    }
+    enemy1.model.position.set(x1, 2, 0)
+
+
+    enemy2.model.position.set(x2, 2, 0)
+
+    const enemyGroup = new CustomEnemyGroup();
+    enemyGroup.position.z = -100
+
+    enemyGroup.add(enemy1.model, enemy2.model);
+    this.enemies.push(enemyGroup)
+    this.gameScene.add(enemyGroup);
   }
 
   updateScoreDisplay() {
@@ -203,8 +231,9 @@ export default class World {
 
     // Re-initialize game elements
     this.initRoadSets();
-    if (this.chunsik) {
-      this.chunsik.resetPosition(); // Optionally reset the character's position
+
+    if (this.character) {
+      this.character.resetPosition();
     }
 
     // Reset the last banner creation time
