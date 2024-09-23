@@ -20,18 +20,19 @@ class CustomBanner extends THREE.Mesh {
 // Represents a group of banners
 class CustomBannerGroup extends THREE.Group {}
 
-class CustomEnemyGroup extends THREE.Group {}
+// class CustomEnemyGroup extends THREE.Group {}
 
 export default class World {
   experience: Experience;
   banners: CustomBannerGroup[];
-  enemies: CustomEnemyGroup[];
+  enemies: CustomBannerGroup[];
   roadSets: RoadSet[];
   character?: Character;
   enemy?: Enemy;
   environment?: Environment;
   lastBannerTime: number;
   bannerInterval: number;
+  lastEnemyTime: number;
   score: number;
 
 
@@ -43,6 +44,7 @@ export default class World {
     this.score = 10;
     this.lastBannerTime = 0;
     this.bannerInterval = 2500; // 2.5 seconds
+    this.lastEnemyTime = 0;
 
     this.resources.on("ready", () => {
       // Setup
@@ -58,6 +60,10 @@ export default class World {
   }
 
   update() {
+    const initialInterval = 2500
+    const minInterval = 1000;
+    const timeFactor = 0.1;
+
     if (this.roadSets) {
       const baseSpeed = 0.15;
       // 바닥 움직이기
@@ -68,15 +74,49 @@ export default class World {
       this.character.update();
     }
 
-    if (this.enemy) {
-      this.enemy.update();
-    }
+    // if (this.enemies) {
+    //   this.enemies.forEach((enemyGroup) => {
+    //     enemyGroup.children.forEach((enemy) => {
+    //       console.log("ENEMY", enemy)
+    //     })
+    //   })
+    // }
+
+    // if (this.enemies) {
+    //   // Check if it's time to create new banners
+    //   if (this.time.elapsed - this.lastEnemyTime > this.bannerInterval) {
+    //     this.initEnemies();
+    //     this.lastEnemyTime = this.time.elapsed;
+    //   }
+    //
+    //   // Move Enemies
+    //   const enemySpeed = 0.5;
+    //   for (let i = this.enemies.length - 1; i >= 0; i--) {
+    //     const enemyGroup = this.enemies[i];
+    //     enemyGroup.position.z += enemySpeed;
+    //
+    //     if (!(this.character && this.character.model)) return;
+    //
+    //     // Check collision of each banner with the character
+    //     for (let i = 0; i < enemyGroup.children.length; i++) {
+    //       const enemy = enemyGroup.children[i] as CustomBanner;
+    //       if (enemyGroup.position.z === this.character.model.position.z && this.character.checkCollision(enemy)) {
+    //
+    //         // const bannerValue = enemy.value;
+    //         enemyGroup.remove(enemy);
+    //       }
+    //     }
+    //
+    //     // Remove banner if it's passed the character's position + 5
+    //     if (enemyGroup.position.z > this.character.model.position.z + 5) {
+    //       this.gameScene.remove(enemyGroup);
+    //       this.enemies.splice(i, 1);
+    //     }
+    //   };
+    // }
 
     if (this.banners && this.character && this.character.model) {
-      const initialInterval = 2500
-      const minInterval = 1000;
-      const timeFactor = 0.1;
-
+      // this.bannerInterval =  Math.max(initialInterval - this.time.elapsed * timeFactor, minInterval);
       this.bannerInterval =  Math.max(initialInterval - this.time.elapsed * timeFactor, minInterval);
 
       // Check if it's time to create new banners
@@ -95,10 +135,11 @@ export default class World {
         for (let i = 0; i < bannerGroup.children.length; i++) {
           const banner = bannerGroup.children[i] as CustomBanner;
           if (bannerGroup.position.z === this.character.model.position.z && this.character.checkCollision(banner)) {
-            bannerGroup.remove(banner);
+
             const bannerValue = banner.value;
             const bannerOperator = banner.operator;
             this.calculateScore(bannerOperator, bannerValue)
+            bannerGroup.remove(banner);
           }
         }
 
@@ -140,8 +181,7 @@ export default class World {
     banner2.group.position.set(x2, 2, 0)
 
     const bannerGroup = new CustomBannerGroup();
-    bannerGroup.position.z = -100
-
+    bannerGroup.position.z = -100;
     bannerGroup.add(banner1.group, banner2.group);
     this.banners.push(bannerGroup)
     this.gameScene.add(bannerGroup);
@@ -158,19 +198,17 @@ export default class World {
     const enemy1 = new Enemy();
     const enemy2 = new Enemy();
 
-    if (!(enemy1.model && enemy2.model)) {
-      return;
-    }
-    enemy1.model.position.set(x1, 2, 0)
+    enemy1.group.position.set(x1, 2, 0)
+    enemy2.group.position.set(x2, 2, 0)
 
-
-    enemy2.model.position.set(x2, 2, 0)
-
-    const enemyGroup = new CustomEnemyGroup();
+    const enemyGroup = new CustomBannerGroup();
     enemyGroup.position.z = -100
 
-    enemyGroup.add(enemy1.model, enemy2.model);
-    this.enemies.push(enemyGroup)
+    // console.log("POS", enemy1.group.position)
+
+    enemyGroup.add(enemy1.group, enemy2.group);
+    console.log('Enemy group children:', enemyGroup.children);
+    this.enemies.push(enemyGroup);
     this.gameScene.add(enemyGroup);
   }
 
@@ -201,9 +239,14 @@ export default class World {
     this.updateScoreDisplay();
 
     if (this.score <= 0) {
-      setTimeout(() => {
-        window.alert("Game Over!\nThe game will restart once the alert is closed.");
-        this.resetGame();
+      setTimeout(async () => {
+        if (this.character) {
+          await this.character.play("death");
+        }
+        setTimeout(() => {
+          window.alert("Game Over!\nThe game will restart once the alert is closed.");
+          this.resetGame();
+        }, 700)
       })
     }
   }
@@ -233,6 +276,7 @@ export default class World {
 
     if (this.character) {
       this.character.resetPosition();
+      this.character.play("walking");
     }
 
     // Reset the last banner creation time

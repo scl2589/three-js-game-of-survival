@@ -3,28 +3,48 @@ import * as THREE from "three";
 import Experience from "../Experience";
 import Animation from "../Utils/Animation";
 import { GLTF } from "three/examples/jsm/Addons.js";
+import {Font, FontLoader} from 'three/examples/jsm/loaders/FontLoader.js';
+import {TextGeometry} from "three/examples/jsm/geometries/TextGeometry.js";
+
+class customEnemyGroup extends THREE.Group {
+    value?: number;
+}
 
 export default class Enemy extends Animation {
     experience: Experience;
-    initialPosition: THREE.Vector3;
     model?: THREE.Group<THREE.Object3DEventMap>;
     animationMixer?: THREE.AnimationMixer;
+    planeGeometry?: THREE.PlaneGeometry;
+    planeMaterial?: THREE.MeshBasicMaterial;
+    randomEnemy: number;
+    group: customEnemyGroup;
 
 
     constructor() {
         super();
-
         this.experience = Experience.getInstance();
-        this.initialPosition = new THREE.Vector3(0, 5, -50);
+        this.randomEnemy = Math.ceil(Math.random() * 3);
+        this.group = new THREE.Group();
+        this.group.value = 10;
+        this.setGeometry();
+        this.setMaterial();
         this.setModel();
         this.debug.on("open", () => this._updateDebug());
         this._updateDebug();
     }
 
+    setGeometry() {
+        this.planeGeometry = new THREE.PlaneGeometry(3, 3, 10, 10);
+    }
+
+    setMaterial() {
+        this.planeMaterial = new THREE.MeshBasicMaterial({color: 'white', transparent: true, opacity: 0.2});
+    }
+
     setModel() {
-        this.model = this.resource.scene;
-        this.model.position.set(0,0.1, 0)
-        this.gameScene.add(this.model);
+        // cloning needed in order to use multiple instances of the same model
+        this.model = this.resource.scene.clone();
+        this.model.position.set(0, 0, 0);
 
         this.model.traverse((child) => {
             if (child instanceof THREE.Mesh) {
@@ -32,20 +52,51 @@ export default class Enemy extends Animation {
             }
         });
 
-        const animationMixer = new THREE.AnimationMixer(this.model);
-        console.log(this.resource.animations[3])
-        this.setAnimations(animationMixer, {
-            idle: animationMixer.clipAction(this.resource.animations[3]),
-            walking: animationMixer.clipAction(this.resource.animations[13]),
-            running: animationMixer.clipAction(this.resource.animations[10]),
-            death: animationMixer.clipAction(this.resource.animations[0])
+        const plane = new THREE.Mesh(this.planeGeometry, this.planeMaterial)
+        plane.position.set(0, 3, 0)
+
+        // Add text to the banner
+        const loader  = new FontLoader();
+        const textValue = this.group.value.toString();
+        loader.load('/fonts/optimer_bold.typeface.json', (font: Font) => {
+            const textGeometry = new TextGeometry(textValue, {
+                font: font,
+                size: 1.5,
+                depth: 0.1,
+            })
+            textGeometry.computeBoundingBox();
+
+            const textWidth = textGeometry.boundingBox ? textGeometry.boundingBox.max.x - textGeometry.boundingBox.min.x : 0;
+            const textHeight = textGeometry.boundingBox ? textGeometry.boundingBox.max.y - textGeometry.boundingBox.min.y : 0;
+
+
+            const textMaterial = new THREE.MeshBasicMaterial({ color: 0x000000})
+            const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+            textMesh.position.set(-textWidth/2, -textHeight/2, 0.1);
+            plane.add(textMesh);
+        })
+
+        this.group.add(this.model, plane)
+        this.gameScene.add(this.group);
+
+        // Add animations
+        this.animationMixer = new THREE.AnimationMixer(this.model);
+
+        this.setAnimations(this.animationMixer, {
+            idle: this.animationMixer.clipAction(this.resource.animations[3]),
+            walking: this.animationMixer.clipAction(this.resource.animations[13]),
+            running: this.animationMixer.clipAction(this.resource.animations[10]),
+            death: this.animationMixer.clipAction(this.resource.animations[0])
         });
         this.play("walking");
-
     }
 
     update() {
         super.update(this.time.delta * 0.001);
+        // if (this.model) {
+        //     console.log("MODEL HERE", this.model.position)
+        //     this.model.position.z += 0.1;
+        // }
     }
 
     static getNonOverlappingPositions(minX: number, maxX:number, minDistance:number) {
@@ -97,10 +148,6 @@ export default class Enemy extends Animation {
         return characterBox.intersectsBox(objectBox);
     }
 
-    resetPosition() {
-        if (!this.model) return;
-        this.model.position.copy(this.initialPosition);
-    }
 
     private get gameScene() {
         return this.experience.gameScene;
@@ -111,7 +158,8 @@ export default class Enemy extends Animation {
     }
 
     private get resource() {
-        return this.resources.items.enemyModel1 as GLTF;
+        const resource = `enemyModel${this.randomEnemy}`
+        return this.resources.items[resource] as GLTF;
     }
 
     private get time() {
