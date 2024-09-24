@@ -13,6 +13,8 @@ export default class World {
   enemy?: Enemy;
   environment?: Environment;
   score: number;
+  enemyInitialized: boolean;
+  enemyStartTime: number;
   bannerInitialized: boolean;
   bannerStartTime: number;
 
@@ -20,15 +22,19 @@ export default class World {
     this.experience = Experience.getInstance();
     this.roadSets = [];
     this.score = 10;
-    this.bannerInitialized = false;  // Tracks if banners are already initialized
-    this.bannerStartTime = 0;        // Tracks the time when to start banner creation
+    this.bannerInitialized = false;
+    this.bannerStartTime = 0;
+    this.enemyInitialized = false;
+    this.enemyStartTime = 0;
 
     this.resources.on("ready", () => {
       this.initRoadSets();
       this.initEnemies();
       this.character = new Character();
       this.environment = new Environment();
-      this.bannerStartTime = this.time.elapsed;  // Set the banner start time
+      this.bannerStartTime = this.time.elapsed;
+      this.bannerManager = new Banner();
+      this.enemyStartTime = this.time.elapsed + 1250;
     });
   }
 
@@ -47,12 +53,20 @@ export default class World {
       if (!this.bannerInitialized && (this.time.elapsed - this.bannerStartTime) > 2500) {
         this.bannerManager = new Banner();
         this.bannerInitialized = true;
-        return;
       }
 
       // Update banners if they exist
       if (this.bannerManager) {
         this.bannerManager.updateBanners(this.character);
+      }
+
+      if (!this.enemyInitialized && (this.time.elapsed - this.enemyStartTime ) > 2500) {
+        this.enemy = new Enemy();
+        this.enemyInitialized = true;
+      }
+
+      if (this.enemy) {
+        this.enemy.updateEnemy(this.character)
       }
     }
   }
@@ -119,6 +133,22 @@ export default class World {
     if (this.character) {
       this.character.play('walking')
       this.character.resetPosition();
+    }
+
+    if (this.enemy) {
+      Enemy.enemies.forEach((enemyGroup) => {
+        this.gameScene.remove(enemyGroup);
+      });
+      Enemy.enemies = [];
+      Enemy.lastEnemyTime = 550;
+    }
+
+    if (this.bannerManager) {
+      Banner.banners.forEach((bannerGroup) => {
+        this.gameScene.remove(bannerGroup);
+      });
+      Banner.banners = [];
+      Banner.lastBannerTime = 0;
     }
   }
 

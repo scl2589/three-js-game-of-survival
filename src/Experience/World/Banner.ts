@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import Experience from "../Experience";
-import { Font, FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
+import { Font } from 'three/examples/jsm/loaders/FontLoader.js';
 import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
 import Character from './Character';
 
@@ -52,17 +52,13 @@ export default class Banner {
         const plane = new THREE.Mesh(Banner.planeGeometry, this.planeMaterial);
         plane.position.set(2.5, 0, 0);
 
-        if (!Banner.font) {
-            await this.loadFont();
-        }
-
-        if (Banner.font) {
+        if (this.experience.font) {
             const operator = this.getRandomOperator();
             const value = this.getRandomValue();
             const textValue = `${operator}${value}`;
 
             this.group.userData = {operator, value}
-            this.addTextToPlane(plane, textValue, Banner.font);
+            this.addTextToPlane(plane, textValue, this.experience.font);
         }
 
         this.group.add(pole1, pole2, plane);
@@ -76,15 +72,6 @@ export default class Banner {
         const textMesh = new THREE.Mesh(textGeometry, textMaterial);
         textMesh.position.set(-1.5, -0.5, 0.1);
         plane.add(textMesh);
-    }
-
-    async loadFont() {
-        const loader = new FontLoader();
-        try {
-            Banner.font = await loader.loadAsync('/fonts/optimer_bold.typeface.json');
-        } catch (error) {
-            console.error("Failed to load font:", error);
-        }
     }
 
     getRandomOperator = () => ['x', '+', '-', '÷'][Math.floor(Math.random() * 4)];

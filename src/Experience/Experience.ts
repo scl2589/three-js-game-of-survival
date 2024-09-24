@@ -9,6 +9,7 @@ import Resources from "./Utils/Resources";
 import sources from "./sources";
 import Debug from "./Utils/Debug";
 import GUI from "lil-gui";
+import { Font, FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
 
 export default class Experience {
   canvas: HTMLCanvasElement;
@@ -22,6 +23,7 @@ export default class Experience {
   renderer: Renderer;
   world: World;
   currentScene: THREE.Scene;
+  font?: Font;
 
   static instance: Experience;
   static getInstance(canvas?: HTMLCanvasElement) {
@@ -55,6 +57,7 @@ export default class Experience {
     this.startScene = new THREE.Scene();
     this.currentScene = this.startScene;
     this.camera = new Camera();
+    this.loadFont();
 
     this.addClickEvent();
   }
@@ -72,6 +75,7 @@ export default class Experience {
       });
     });
   }
+
 
   initGame() {
     // Setup
@@ -93,6 +97,15 @@ export default class Experience {
     this.camera.update();
     this.world.update();
     this.renderer.update();
+  }
+
+  async loadFont() {
+    const loader = new FontLoader();
+    try {
+      this.font = await loader.loadAsync('/fonts/optimer_bold.typeface.json');
+    } catch (error) {
+      console.error("Failed to load font:", error);
+    }
   }
 
   destroy() {
