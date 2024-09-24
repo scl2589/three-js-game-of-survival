@@ -33,13 +33,13 @@ export default class Enemy extends Animation {
 
     setGeometry() {
         if (!Enemy.planeGeometry) {
-            Enemy.planeGeometry = new THREE.PlaneGeometry(5, 5, 10, 10);
+            Enemy.planeGeometry = new THREE.PlaneGeometry(3, 2, 10, 10);
         }
     }
 
     setMaterial() {
         if (!this.planeMaterial) {
-            this.planeMaterial = new THREE.MeshBasicMaterial({ color: 'red', transparent: true, opacity: 0.5 });
+            this.planeMaterial = new THREE.MeshBasicMaterial({ color: 'white', transparent: true, opacity: 0.2 });
         }
     }
 
@@ -56,11 +56,11 @@ export default class Enemy extends Animation {
         });
 
         const plane = new THREE.Mesh(Enemy.planeGeometry, this.planeMaterial);
-        plane.position.set(0, 3, 0);
+        plane.position.set(0, 4.3, 0);
 
         if (this.experience.font) {
             const value = this.getRandomValue();
-            this.group.userData = { value };
+            this.group.userData = { value: value };
             this.addTextToPlane(plane, value.toString(), this.experience.font);
         }
 
@@ -79,11 +79,11 @@ export default class Enemy extends Animation {
     }
 
     addTextToPlane(plane: THREE.Mesh, textValue: string, font: Font) {
-        const textGeometry = new TextGeometry(textValue, { font: font, size: 1.8, depth: 0.1 });
+        const textGeometry = new TextGeometry(textValue, { font: font, size: 1.1, depth: 0.1 });
         const textMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
 
         const textMesh = new THREE.Mesh(textGeometry, textMaterial);
-        textMesh.position.set(-1.5, -0.5, 0.1);
+        textMesh.position.set(-0.5, -0.5, 0.1);
         plane.add(textMesh);
     }
 
@@ -95,8 +95,8 @@ export default class Enemy extends Animation {
 
 
         const [x1, x2] = this.getNonOverlappingPositions(-10, 5, 7);
-        enemy1.group.position.set(x1, 2, 0);
-        enemy2.group.position.set(x2, 2, 0);
+        enemy1.group.position.set(x1, 0, 0);
+        enemy2.group.position.set(x2, 0, 0);
 
         const enemyGroup = new THREE.Group();
         enemyGroup.add(enemy1.group, enemy2.group)
@@ -111,7 +111,6 @@ export default class Enemy extends Animation {
         const enemySpeed = 0.5;
         if (this.time.elapsed - Enemy.lastEnemyTime > Enemy.enemyInterval) {
             Enemy.createEnemy(this.gameScene);
-            console.log(this.time.elapsed)
             Enemy.lastEnemyTime = this.time.elapsed;
         }
 
@@ -125,6 +124,20 @@ export default class Enemy extends Animation {
                     this.handleCollision(enemy);
                     enemyGroup.remove(enemy);
                 }
+
+
+                // textMesh 업데이트하기
+                if (enemy.userData.value !== undefined) {
+                    enemy.userData.value -= 1;
+                    const textMesh = enemyGroup.children.find(child => child instanceof THREE.Mesh && child.geometry instanceof TextGeometry);
+
+                    if (textMesh) {
+                        // enemyGroup.remove(textMesh);
+                        console.log('came here')
+                        textMesh.geometry.dispose(); // Dispose of old geometry
+                        textMesh.geometry = new TextGeometry(enemy.userData.value.toString(), { font: this.experience.font, size: 1.1, depth: 0.1 });;
+                    }
+                }
             }
             if (character.model && enemyGroup.position.z > character.model.position.z + 5) {
                 this.gameScene.remove(enemyGroup);
@@ -135,7 +148,6 @@ export default class Enemy extends Animation {
     }
 
     handleCollision(enemy: THREE.Object3D<THREE.Object3DEventMap>) {
-        console.log(enemy);
         // console.log("COLIDEDED")
     }
 
