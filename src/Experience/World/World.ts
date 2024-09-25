@@ -140,7 +140,7 @@ export default class World {
         this.gameScene.remove(enemyGroup);
       });
       Enemy.enemies = [];
-      Enemy.lastEnemyTime = 550;
+      Enemy.lastEnemyTime = 1200;
     }
 
     if (this.bannerManager) {

@@ -128,17 +128,30 @@ export default class Enemy extends Animation {
 
                 // textMesh 업데이트하기
                 if (enemy.userData.value !== undefined) {
-                    enemy.userData.value -= 1;
-                    const textMesh = enemyGroup.children.find(child => child instanceof THREE.Mesh && child.geometry instanceof TextGeometry);
+                    const plane = enemy.children.find(child => child instanceof THREE.Mesh) as THREE.Mesh | undefined;
 
-                    if (textMesh) {
-                        // enemyGroup.remove(textMesh);
-                        console.log('came here')
-                        textMesh.geometry.dispose(); // Dispose of old geometry
-                        textMesh.geometry = new TextGeometry(enemy.userData.value.toString(), { font: this.experience.font, size: 1.1, depth: 0.1 });;
+                    if (plane) {
+                        enemy.userData.value += 1;
+
+                        const oldTextMesh = plane.children.find(child => child instanceof THREE.Mesh) as THREE.Mesh;
+                        if (oldTextMesh) {
+                            plane.remove(oldTextMesh);
+                            oldTextMesh.geometry.dispose(); // Properly dispose of old geometry
+                        }
+
+                        const newTextGeometry = new TextGeometry(enemy.userData.value.toString(), {
+                            font: this.experience.font,
+                            size: 1.1,
+                            depth: 0.1
+                        });
+                        const newTextMesh = new THREE.Mesh(newTextGeometry, new THREE.MeshBasicMaterial({ color: 0x000000 }));
+                        newTextMesh.position.set(-0.5, -0.5, 0.1); // Adjust position of the text on the plane
+
+                        plane.add(newTextMesh);
                     }
                 }
             }
+
             if (character.model && enemyGroup.position.z > character.model.position.z + 5) {
                 this.gameScene.remove(enemyGroup);
                 Enemy.enemies.splice(index, 1);
