@@ -3,12 +3,20 @@ import * as THREE from "three";
 import Experience from "../Experience";
 import Animation from "../Utils/Animation";
 import { GLTF } from "three/examples/jsm/Addons.js";
+import {c} from "vite/dist/node/types.d-aGj9QkWt";
+
+interface Bullet {
+  mesh: THREE.Mesh;
+  raycaster: THREE.Raycaster;
+}
 
 export default class Character extends Animation {
   experience: Experience;
   initialPosition: THREE.Vector3;
   model?: THREE.Group<THREE.Object3DEventMap>;
   animationMixer?: THREE.AnimationMixer;
+  // bullets?: Bullet[];
+  bullets: [];
 
 
   constructor() {
@@ -16,6 +24,7 @@ export default class Character extends Animation {
 
     this.experience = Experience.getInstance();
     this.initialPosition = new THREE.Vector3(0, 0.1, 30);
+    this.bullets = [];
     this.setModel();
     this.debug.on("open", () => this._updateDebug());
     this._updateDebug();
@@ -44,7 +53,7 @@ export default class Character extends Animation {
     this.play("walking");
 
     document.addEventListener('keydown', (e) => {
-      switch (e.key) {
+      switch (e.code) {
         case "ArrowLeft":
           // Left pressed
             this.move('left')
@@ -53,6 +62,10 @@ export default class Character extends Animation {
           // Right pressed
           this.move('right')
           break;
+        case "Space":
+          // Space pressed
+          this.shoot();
+          break;
       }
     });
 
@@ -60,6 +73,37 @@ export default class Character extends Animation {
 
   update() {
     super.update(this.time.delta * 0.001);
+
+    // Move each bullet forward and check for intersections
+    if (this.bullets) {
+      this.bullets.forEach(bullet => {
+        // const { mesh: bullet, raycaster } = bulletObj;
+
+        // Move the bullet forward
+        bullet.position.z -= 0.1;
+
+        // // Update the raycaster's position to the current bullet position
+        // raycaster.set(bullet.position, new THREE.Vector3(0, 0, -1));
+
+        // // Check for intersections with objects, excluding the bullet itself
+        // const intersects = raycaster.intersectObjects(this.gameScene.children, true)
+        //     .filter(intersect => intersect.object !== bullet); // Exclude the bullet from intersections
+        //
+        // if (intersects.length > 0) {
+        //   const hitObject = intersects[0].object;
+        //   console.log('Bullet hit:', hitObject);
+        //
+        //   // Remove bullet from scene on hit
+        //   // this.gameScene.remove(bullet);
+        //   this.bullets = this.bullets.filter(b => b.mesh !== bullet);
+        // }
+        //
+        // // Remove bullet if out of bounds
+        if (bullet.position.z === -150) {
+          this.gameScene.remove(bullet);
+        }
+      });
+    }
   }
 
   private _updateDebug() {
@@ -103,6 +147,30 @@ export default class Character extends Animation {
         if (this.model.position.x >= 8) return;
         this.model.position.x += 1;
         break;
+    }
+  }
+
+  shoot() {
+    if (!this.model) return;
+    // make bullet geometry
+    const geometry = new THREE.SphereGeometry(0.2, 32, 32);
+    const material = new THREE.MeshBasicMaterial({ color: 'black' });
+    const bullet = new THREE.Mesh(geometry, material);
+    bullet.position.copy(this.model.position);
+    bullet.position.y += 2;
+    bullet.position.z -= 3;
+    //
+    // // Add raycaster to the bullet
+    // const raycaster = new THREE.Raycaster();
+    // const bulletDirection = new THREE.Vector3(0, 0, -1);
+    // raycaster.set(bullet.position, bulletDirection);
+    // console.log(bulletDirection)
+
+    if (this.bullets) {
+      // add bullet to scene
+      // this.bullets.push({mesh: bullet, raycaster: raycaster});
+      this.bullets.push(bullet)
+      this.gameScene.add(bullet);
     }
   }
 
