@@ -91,7 +91,7 @@ export default class Banner {
         bannerGroup.add(banner1.group, banner2.group);
 
         Banner.banners.push(bannerGroup);
-        bannerGroup.position.z = -150;
+        bannerGroup.position.z = -250;
         gameScene.add(bannerGroup);
     }
 

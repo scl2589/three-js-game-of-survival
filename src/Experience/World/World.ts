@@ -29,12 +29,11 @@ export default class World {
 
     this.resources.on("ready", () => {
       this.initRoadSets();
-      this.initEnemies();
       this.character = new Character();
       this.environment = new Environment();
+
       this.bannerStartTime = this.time.elapsed;
-      this.bannerManager = new Banner();
-      this.enemyStartTime = this.time.elapsed + 1250;
+      this.enemyStartTime = this.time.elapsed;
     });
   }
 
@@ -82,10 +81,6 @@ export default class World {
       this.roadSets.push(roadSet);
       this.gameScene.add(roadSet.group);
     }
-  }
-
-  initEnemies() {
-    // Similar logic for initializing enemies
   }
 
   updateScoreDisplay() {
@@ -140,7 +135,7 @@ export default class World {
         this.gameScene.remove(enemyGroup);
       });
       Enemy.enemies = [];
-      Enemy.lastEnemyTime = 1200;
+      Enemy.lastEnemyTime = this.time.elapsed + 1250;
     }
 
     if (this.bannerManager) {
@@ -148,7 +143,7 @@ export default class World {
         this.gameScene.remove(bannerGroup);
       });
       Banner.banners = [];
-      Banner.lastBannerTime = 0;
+      Banner.lastBannerTime = this.time.elapsed;
     }
   }
 

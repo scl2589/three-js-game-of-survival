@@ -17,10 +17,10 @@ export default class Camera {
 
   setInstance() {
     this.instance = new THREE.PerspectiveCamera(
-      50,
+      35,
       this.sizes.width / this.sizes.height,
       0.1,
-      100
+      150
     );
     this.instance.position.set(0, 200, 800);
     this.gameScene.add(this.instance);
@@ -33,8 +33,8 @@ export default class Camera {
     this.controls.enableDamping = true;
     this.controls.dampingFactor = 0.25;
     this.controls.enableZoom = true;
-    this.controls.maxPolarAngle = Math.PI / 2;
-    this.controls.minPolarAngle = Math.PI / 8;
+    this.controls.maxPolarAngle = Math.PI / 2.1;
+    this.controls.minPolarAngle = Math.PI / 2.25;
     this.controls.minDistance = 5;
     this.controls.maxDistance = 50;
   }

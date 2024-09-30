@@ -102,7 +102,7 @@ export default class Enemy extends Animation {
         enemyGroup.add(enemy1.group, enemy2.group)
 
         Enemy.enemies.push(enemyGroup);
-        enemyGroup.position.z = -150
+        enemyGroup.position.z = -250
         gameScene.add(enemyGroup);
     }
 
