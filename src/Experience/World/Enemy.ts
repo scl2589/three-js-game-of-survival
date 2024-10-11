@@ -90,87 +90,90 @@ export default class Enemy extends Animation {
     getRandomValue = () => Math.ceil(Math.random() * 9);
 
     static createEnemy(gameScene: THREE.Scene) {
-        const enemy1 = new Enemy();
-        const enemy2 = new Enemy();
+        const enemy = new Enemy();
 
+        enemy.group.position.set(Math.random() * 15 - 10, 0, -100);
 
-        const [x1, x2] = this.getNonOverlappingPositions(-10, 5, 7);
-        enemy1.group.position.set(x1, 0, 0);
-        enemy2.group.position.set(x2, 0, 0);
-
-        const enemyGroup = new THREE.Group();
-        enemyGroup.add(enemy1.group, enemy2.group)
-
-        Enemy.enemies.push(enemyGroup);
-        enemyGroup.position.z = -250
-        gameScene.add(enemyGroup);
+        Enemy.enemies.push(enemy.group);
+        gameScene.add(enemy.group);
     }
 
     updateEnemy(character: Character) {
         super.update(this.time.delta * 0.001);
-        const enemySpeed = 0.5;
+        const enemySpeed = 0.2;
         if (this.time.elapsed - Enemy.lastEnemyTime > Enemy.enemyInterval) {
             Enemy.createEnemy(this.gameScene);
             Enemy.lastEnemyTime = this.time.elapsed;
         }
 
-        Enemy.enemies.forEach((enemyGroup, index) => {
-            // enemies move
-            enemyGroup.position.z += enemySpeed;
-
-            for (let j = 0; j < enemyGroup.children.length; j++) {
-                const enemy = enemyGroup.children[j];
-                if (character.model && enemy.position.z >= character.model.position.z && character.checkCollision(enemy)) {
-                    character.checkCollision(enemy);
-                    enemyGroup.remove(enemy);
-                }
-
-
-
-                character.bullets.forEach((bullet) => {
-                    if (this.checkCollision(enemy, bullet)) {
-                        console.log(enemy.position.z, bullet.position.z)
-                        enemyGroup.remove(enemy);
-                        character.bullets.splice(character.bullets.indexOf(bullet), 1);
-                        this.gameScene.remove(bullet);
-
-                    }
-
-                    if (bullet.position.z <= -100) {
-                        character.bullets.splice(character.bullets.indexOf(bullet), 1);
-                        this.gameScene.remove(bullet);
-                    }
-                })
-
-
-                // textMesh 업데이트하기
-                if (enemy.userData.value !== undefined) {
-                    const plane = enemy.children.find(child => child instanceof THREE.Mesh) as THREE.Mesh | undefined;
-
-                    if (plane) {
-                        enemy.userData.value += 1;
-
-                        const oldTextMesh = plane.children.find(child => child instanceof THREE.Mesh) as THREE.Mesh;
-                        if (oldTextMesh) {
-                            plane.remove(oldTextMesh);
-                            oldTextMesh.geometry.dispose(); // Properly dispose of old geometry
-                        }
-
-                        const newTextGeometry = new TextGeometry(enemy.userData.value.toString(), {
-                            font: this.experience.font,
-                            size: 1.1,
-                            depth: 0.1
-                        });
-                        const newTextMesh = new THREE.Mesh(newTextGeometry, new THREE.MeshBasicMaterial({ color: 0x000000 }));
-                        newTextMesh.position.set(-0.5, -0.5, 0.1); // Adjust position of the text on the plane
-
-                        plane.add(newTextMesh);
-                    }
-                }
+        Enemy.enemies.forEach((enemy, index) => {
+            if (enemy.userData.collided) {
+                return;
             }
 
-            if (character.model && enemyGroup.position.z > character.model.position.z + 5) {
-                this.gameScene.remove(enemyGroup);
+            // enemies move
+            enemy.position.z += enemySpeed;
+
+            if (character.model && enemy.position.z >= character.model.position.z && character.checkCollision(enemy)) {
+                // 충돌로 인한 점수 감소 로직 추가
+                enemy.userData.collided = true;
+
+                this.world.calculateScore('-', enemy.userData.value);
+                Enemy.enemies.splice(index, 1);
+                this.gameScene.remove(enemy);
+                return;
+            }
+
+            // 총알과 적의 충돌 로직
+            character.bullets.forEach((bullet) => {
+                if (this.checkCollision(enemy, bullet)) {
+                    character.bullets.splice(character.bullets.indexOf(bullet), 1);
+                    this.gameScene.remove(bullet);
+                    // TODO: HP 감소 로직 추가
+                    // textMesh 업데이트하기
+                    if (enemy.userData.value !== undefined) {
+                        const plane = enemy.children.find(child => child instanceof THREE.Mesh) as THREE.Mesh | undefined;
+
+                        if (plane) {
+                            enemy.userData.value -= 1;
+
+                            if (enemy.userData.value === 0) {
+                                // TODO: enemy HP가 0이므로 점수 추가 로직
+                                this.gameScene.remove(enemy);
+                                return;
+                            }
+
+                            const oldTextMesh = plane.children.find(child => child instanceof THREE.Mesh) as THREE.Mesh;
+                            if (oldTextMesh) {
+                                plane.remove(oldTextMesh);
+                                oldTextMesh.geometry.dispose(); // Properly dispose of old geometry
+                            }
+
+                            const newTextGeometry = new TextGeometry(enemy.userData.value.toString(), {
+                                font: this.experience.font,
+                                size: 1.1,
+                                depth: 0.1
+                            });
+                            const newTextMesh = new THREE.Mesh(newTextGeometry, new THREE.MeshBasicMaterial({ color: 0x000000 }));
+                            newTextMesh.position.set(-0.5, -0.5, 0.1); // Adjust position of the text on the plane
+
+                            plane.add(newTextMesh);
+                        }
+                    }
+                    // character.bullets.splice(character.bullets.indexOf(bullet), 1);
+                    // this.gameScene.remove(bullet);
+                    // this.gameScene.remove(enemy);
+                    return;
+                }
+
+                if (bullet.position.z <= -100) {
+                    character.bullets.splice(character.bullets.indexOf(bullet), 1);
+                    this.gameScene.remove(bullet);
+                }
+            })
+
+            if (character.model && enemy.position.z > character.model.position.z + 5) {
+                this.gameScene.remove(enemy);
                 Enemy.enemies.splice(index, 1);
             }
         })
@@ -210,5 +213,9 @@ export default class Enemy extends Animation {
 
     private get time() {
         return this.experience.time;
+    }
+
+    private get world() {
+        return this.experience.world;
     }
 }
