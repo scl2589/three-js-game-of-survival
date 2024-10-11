@@ -10,6 +10,7 @@ import sources from "./sources";
 import Debug from "./Utils/Debug";
 import GUI from "lil-gui";
 import { Font, FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
+import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
 
 export default class Experience {
   canvas: HTMLCanvasElement;
@@ -24,6 +25,7 @@ export default class Experience {
   world: World;
   currentScene: THREE.Scene;
   font?: Font;
+  instructionsText?: THREE.Mesh;
 
   static instance: Experience;
   static getInstance(canvas?: HTMLCanvasElement) {
@@ -86,6 +88,32 @@ export default class Experience {
 
     // Time tick event
     this.time.on("tick", () => this.update());
+
+    // instructions
+    this.createInstructionsText();
+
+    setTimeout(() => {
+      if (this.instructionsText) {
+        this.gameScene.remove(this.instructionsText);
+
+        // Dispose of geometry and material
+        this.instructionsText.geometry.dispose();
+        const materials = this.instructionsText.material;
+        if (Array.isArray(materials)) {
+          materials.forEach((material) => {
+            if (material && typeof material.dispose === "function") {
+              material.dispose();
+            }
+          });
+        } else {
+          if (materials && typeof materials.dispose === "function") {
+            materials.dispose();
+          }
+        }
+        // Clear the reference
+        this.instructionsText = undefined;
+      }
+    }, 5000); // 5000 milliseconds = 5 seconds
   }
 
   resize() {
@@ -106,6 +134,35 @@ export default class Experience {
     } catch (error) {
       console.error("Failed to load font:", error);
     }
+  }
+
+
+  async createInstructionsText() {
+    if (!this.font) {
+      console.error("Font not loaded.");
+      return;
+    }
+
+    const textGeometry = new TextGeometry("Use < > keys to move\nUse spacebar to shoot", {
+      font: this.font,
+      size: 2,
+      height: 0.1,
+      curveSegments: 12,
+      bevelEnabled: true,
+      bevelThickness: 0.1,
+      bevelSize: 0.05,
+      bevelSegments: 5,
+    });
+
+    textGeometry.computeBoundingBox();
+    textGeometry.center();
+
+    const textMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+    this.instructionsText = new THREE.Mesh(textGeometry, textMaterial);
+
+    // Position the text in the center of the screen
+    this.instructionsText.position.set(0, 5, -5); // Adjust as needed
+    this.gameScene.add(this.instructionsText);
   }
 
   destroy() {

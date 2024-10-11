@@ -49,7 +49,7 @@ export default class World {
     const speedMultiplier = 1 + (this.time.elapsed / 10000)
     const currentSpeed = this.baseSpeed * speedMultiplier;
 
-    this.regenTime = 2500 / speedMultiplier;
+    this.regenTime = 2500 / speedMultiplier / 5;
 
     this.roadSets.forEach((roadSet) => roadSet.update(currentSpeed));
 
@@ -116,6 +116,7 @@ export default class World {
       }, 700);
     }
   }
+
 
   resetGame() {
     this.time.reset();
