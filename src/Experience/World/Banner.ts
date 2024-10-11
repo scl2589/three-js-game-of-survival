@@ -54,7 +54,7 @@ export default class Banner {
 
         if (this.experience.font) {
             const operator = this.getRandomOperator();
-            const value = this.getRandomValue();
+            const value = operator === '÷' ? this.getRandomValue() + 1 : this.getRandomValue();
             const textValue = `${operator}${value}`;
 
             this.group.userData = {operator, value}
@@ -75,7 +75,7 @@ export default class Banner {
     }
 
     getRandomOperator = () => ['x', '+', '-', '÷'][Math.floor(Math.random() * 4)];
-    getRandomValue = () => Math.ceil(Math.random() * 9);
+    getRandomValue = () => Math.floor(Math.random() * 9);
     getRandomColor = () => `#${Math.floor(Math.random() * 0xFFFFFF).toString(16).padStart(6, '0')}`;
 
     static initBanners(gameScene: THREE.Scene) {
@@ -91,7 +91,7 @@ export default class Banner {
         bannerGroup.add(banner1.group, banner2.group);
 
         Banner.banners.push(bannerGroup);
-        bannerGroup.position.z = -250;
+        bannerGroup.position.z = -200;
         gameScene.add(bannerGroup);
     }
 

@@ -92,7 +92,7 @@ export default class Enemy extends Animation {
     static createEnemy(gameScene: THREE.Scene) {
         const enemy = new Enemy();
 
-        enemy.group.position.set(Math.random() * 15 - 10, 0, -100);
+        enemy.group.position.set(Math.random() * 20 - 10, 0, -220);
 
         Enemy.enemies.push(enemy.group);
         gameScene.add(enemy.group);
