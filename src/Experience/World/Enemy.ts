@@ -121,9 +121,26 @@ export default class Enemy extends Animation {
             for (let j = 0; j < enemyGroup.children.length; j++) {
                 const enemy = enemyGroup.children[j];
                 if (character.model && enemy.position.z >= character.model.position.z && character.checkCollision(enemy)) {
-                    this.handleCollision(enemy);
+                    character.checkCollision(enemy);
                     enemyGroup.remove(enemy);
                 }
+
+
+
+                character.bullets.forEach((bullet) => {
+                    if (this.checkCollision(enemy, bullet)) {
+                        console.log(enemy.position.z, bullet.position.z)
+                        enemyGroup.remove(enemy);
+                        character.bullets.splice(character.bullets.indexOf(bullet), 1);
+                        this.gameScene.remove(bullet);
+
+                    }
+
+                    if (bullet.position.z <= -100) {
+                        character.bullets.splice(character.bullets.indexOf(bullet), 1);
+                        this.gameScene.remove(bullet);
+                    }
+                })
 
 
                 // textMesh 업데이트하기
@@ -160,8 +177,10 @@ export default class Enemy extends Animation {
 
     }
 
-    handleCollision(enemy: THREE.Object3D<THREE.Object3DEventMap>) {
-        // console.log("COLIDEDED")
+    checkCollision(enemy: THREE.Object3D<THREE.Object3DEventMap>, bullet: THREE.Mesh) {
+        const enemyBox = new THREE.Box3().setFromObject(enemy);
+        const bulletBox = new THREE.Box3().setFromObject(bullet);
+        return enemyBox.intersectsBox(bulletBox);
     }
 
     static getNonOverlappingPositions(minX: number, maxX:number, minDistance:number) {

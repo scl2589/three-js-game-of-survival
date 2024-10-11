@@ -3,20 +3,13 @@ import * as THREE from "three";
 import Experience from "../Experience";
 import Animation from "../Utils/Animation";
 import { GLTF } from "three/examples/jsm/Addons.js";
-import {c} from "vite/dist/node/types.d-aGj9QkWt";
-
-interface Bullet {
-  mesh: THREE.Mesh;
-  raycaster: THREE.Raycaster;
-}
 
 export default class Character extends Animation {
   experience: Experience;
   initialPosition: THREE.Vector3;
   model?: THREE.Group<THREE.Object3DEventMap>;
   animationMixer?: THREE.AnimationMixer;
-  // bullets?: Bullet[];
-  bullets: [];
+  bullets: THREE.Mesh[];
 
 
   constructor() {
@@ -82,22 +75,8 @@ export default class Character extends Animation {
         // Move the bullet forward
         bullet.position.z -= 0.1;
 
-        // // Update the raycaster's position to the current bullet position
-        // raycaster.set(bullet.position, new THREE.Vector3(0, 0, -1));
 
-        // // Check for intersections with objects, excluding the bullet itself
-        // const intersects = raycaster.intersectObjects(this.gameScene.children, true)
-        //     .filter(intersect => intersect.object !== bullet); // Exclude the bullet from intersections
-        //
-        // if (intersects.length > 0) {
-        //   const hitObject = intersects[0].object;
-        //   console.log('Bullet hit:', hitObject);
-        //
-        //   // Remove bullet from scene on hit
-        //   // this.gameScene.remove(bullet);
-        //   this.bullets = this.bullets.filter(b => b.mesh !== bullet);
-        // }
-        //
+
         // // Remove bullet if out of bounds
         if (bullet.position.z === -150) {
           this.gameScene.remove(bullet);
@@ -159,16 +138,9 @@ export default class Character extends Animation {
     bullet.position.copy(this.model.position);
     bullet.position.y += 2;
     bullet.position.z -= 3;
-    //
-    // // Add raycaster to the bullet
-    // const raycaster = new THREE.Raycaster();
-    // const bulletDirection = new THREE.Vector3(0, 0, -1);
-    // raycaster.set(bullet.position, bulletDirection);
-    // console.log(bulletDirection)
 
     if (this.bullets) {
       // add bullet to scene
-      // this.bullets.push({mesh: bullet, raycaster: raycaster});
       this.bullets.push(bullet)
       this.gameScene.add(bullet);
     }
