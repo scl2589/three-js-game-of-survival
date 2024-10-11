@@ -95,15 +95,14 @@ export default class Banner {
         gameScene.add(bannerGroup);
     }
 
-    updateBanners(character: Character) {
-        const bannerSpeed = 0.5;
+    updateBanners(character: Character, baseSpeed: number) {
         if (this.time.elapsed - Banner.lastBannerTime > Banner.bannerInterval) {
             Banner.initBanners(this.gameScene);
             Banner.lastBannerTime = this.time.elapsed;
         }
 
         Banner.banners.forEach((bannerGroup, index) => {
-            bannerGroup.position.z += bannerSpeed;
+            bannerGroup.position.z += baseSpeed * 2;
 
             for (let j = 0; j < bannerGroup.children.length; j++) {
                 const banner = bannerGroup.children[j] ;

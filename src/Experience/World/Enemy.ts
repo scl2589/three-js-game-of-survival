@@ -98,9 +98,8 @@ export default class Enemy extends Animation {
         gameScene.add(enemy.group);
     }
 
-    updateEnemy(character: Character) {
+    updateEnemy(character: Character, baseSpeed: number) {
         super.update(this.time.delta * 0.001);
-        const enemySpeed = 0.2;
         if (this.time.elapsed - Enemy.lastEnemyTime > Enemy.enemyInterval) {
             Enemy.createEnemy(this.gameScene);
             Enemy.lastEnemyTime = this.time.elapsed;
@@ -112,7 +111,7 @@ export default class Enemy extends Animation {
             }
 
             // enemies move
-            enemy.position.z += enemySpeed;
+            enemy.position.z += baseSpeed;
 
             if (character.model && enemy.position.z >= character.model.position.z && character.checkCollision(enemy)) {
                 // 충돌로 인한 점수 감소 로직 추가

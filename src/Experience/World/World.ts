@@ -17,6 +17,8 @@ export default class World {
   enemyStartTime: number;
   bannerInitialized: boolean;
   bannerStartTime: number;
+  baseSpeed: number;
+  regenTime: number;
 
   constructor() {
     this.experience = Experience.getInstance();
@@ -26,6 +28,8 @@ export default class World {
     this.bannerStartTime = 0;
     this.enemyInitialized = false;
     this.enemyStartTime = 0;
+    this.baseSpeed = 0.15
+    this.regenTime = 2500;
 
     this.resources.on("ready", () => {
       this.initRoadSets();
@@ -42,30 +46,34 @@ export default class World {
   }
 
   update() {
-    const baseSpeed = 0.15;
-    this.roadSets.forEach((roadSet) => roadSet.update(baseSpeed));
+    const speedMultiplier = 1 + (this.time.elapsed / 10000)
+    const currentSpeed = this.baseSpeed * speedMultiplier;
+
+    this.regenTime = 2500 / speedMultiplier;
+
+    this.roadSets.forEach((roadSet) => roadSet.update(currentSpeed));
 
     if (this.character) {
       this.character.update();
 
       // Trigger banner initialization after 2.5 seconds
-      if (!this.bannerInitialized && (this.time.elapsed - this.bannerStartTime) > 2500) {
+      if (!this.bannerInitialized && (this.time.elapsed - this.bannerStartTime) > this.regenTime) {
         this.bannerManager = new Banner();
         this.bannerInitialized = true;
       }
 
       // Update banners if they exist
       if (this.bannerManager) {
-        this.bannerManager.updateBanners(this.character);
+        this.bannerManager.updateBanners(this.character, currentSpeed);
       }
 
-      if (!this.enemyInitialized && (this.time.elapsed - this.enemyStartTime ) > 2500) {
+      if (!this.enemyInitialized && (this.time.elapsed - this.enemyStartTime ) > this.regenTime) {
         this.enemy = new Enemy();
         this.enemyInitialized = true;
       }
 
       if (this.enemy) {
-        this.enemy.updateEnemy(this.character)
+        this.enemy.updateEnemy(this.character,currentSpeed)
       }
     }
   }
@@ -110,11 +118,15 @@ export default class World {
   }
 
   resetGame() {
-    this.time.elapsed = 0;
+    this.time.reset();
 
     // Reset score
     this.score = 10;
     this.updateScoreDisplay();
+
+    // Reset speed and initial values
+    this.baseSpeed = 0.15;
+    this.regenTime = 2500;
 
     // Remove all road sets
     this.roadSets.forEach((roadSet) => {
