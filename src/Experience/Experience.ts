@@ -86,7 +86,8 @@ export default class Experience {
     // Sizes resize event
     this.sizes.on("resize", () => this.resize());
 
-    // Time tick event
+    // Reset time and time tick event
+    this.time.reset();
     this.time.on("tick", () => this.update());
 
     // instructions
@@ -113,7 +114,7 @@ export default class Experience {
         // Clear the reference
         this.instructionsText = undefined;
       }
-    }, 5000); // 5000 milliseconds = 5 seconds
+    }, 5000);
   }
 
   resize() {

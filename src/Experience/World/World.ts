@@ -46,12 +46,15 @@ export default class World {
   }
 
   update() {
+    const deltaTime = this.time.delta / 10; // 밀리초를 초 단위로 변환
     const speedMultiplier = 1 + (this.time.elapsed / 10000)
     const currentSpeed = this.baseSpeed * speedMultiplier;
 
     this.regenTime = 2500 / speedMultiplier / 5;
 
-    this.roadSets.forEach((roadSet) => roadSet.update(currentSpeed));
+
+
+    this.roadSets.forEach((roadSet) => roadSet.update(currentSpeed, deltaTime, this.character));
 
     if (this.character) {
       this.character.update();
@@ -67,14 +70,14 @@ export default class World {
         this.bannerManager.updateBanners(this.character, currentSpeed);
       }
 
-      if (!this.enemyInitialized && (this.time.elapsed - this.enemyStartTime ) > this.regenTime) {
-        this.enemy = new Enemy();
-        this.enemyInitialized = true;
-      }
-
-      if (this.enemy) {
-        this.enemy.updateEnemy(this.character,currentSpeed)
-      }
+      // if (!this.enemyInitialized && (this.time.elapsed - this.enemyStartTime ) > this.regenTime) {
+      //   this.enemy = new Enemy();
+      //   this.enemyInitialized = true;
+      // }
+      //
+      // if (this.enemy) {
+      //   this.enemy.updateEnemy(this.character,currentSpeed)
+      // }
     }
   }
 
@@ -143,13 +146,13 @@ export default class World {
       this.character.resetPosition();
     }
 
-    if (this.enemy) {
-      Enemy.enemies.forEach((enemyGroup) => {
-        this.gameScene.remove(enemyGroup);
-      });
-      Enemy.enemies = [];
-      Enemy.lastEnemyTime = this.time.elapsed + 1250;
-    }
+    // if (this.enemy) {
+    //   Enemy.enemies.forEach((enemyGroup) => {
+    //     this.gameScene.remove(enemyGroup);
+    //   });
+    //   Enemy.enemies = [];
+    //   Enemy.lastEnemyTime = this.time.elapsed + 1250;
+    // }
 
     if (this.bannerManager) {
       Banner.banners.forEach((bannerGroup) => {
