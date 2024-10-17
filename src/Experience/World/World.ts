@@ -54,7 +54,7 @@ export default class World {
 
 
 
-    this.roadSets.forEach((roadSet) => roadSet.update(currentSpeed, deltaTime, this.character));
+    this.roadSets.forEach((roadSet) => roadSet.update(currentSpeed, deltaTime));
 
     if (this.character) {
       this.character.update();
@@ -69,15 +69,6 @@ export default class World {
       if (this.bannerManager) {
         this.bannerManager.updateBanners(this.character, currentSpeed);
       }
-
-      // if (!this.enemyInitialized && (this.time.elapsed - this.enemyStartTime ) > this.regenTime) {
-      //   this.enemy = new Enemy();
-      //   this.enemyInitialized = true;
-      // }
-      //
-      // if (this.enemy) {
-      //   this.enemy.updateEnemy(this.character,currentSpeed)
-      // }
     }
   }
 
@@ -145,14 +136,6 @@ export default class World {
       this.character.play('walking')
       this.character.resetPosition();
     }
-
-    // if (this.enemy) {
-    //   Enemy.enemies.forEach((enemyGroup) => {
-    //     this.gameScene.remove(enemyGroup);
-    //   });
-    //   Enemy.enemies = [];
-    //   Enemy.lastEnemyTime = this.time.elapsed + 1250;
-    // }
 
     if (this.bannerManager) {
       Banner.banners.forEach((bannerGroup) => {

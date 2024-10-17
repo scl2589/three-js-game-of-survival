@@ -75,7 +75,7 @@ export default class Enemy extends Animation {
         this.play("walking");
         this.group.position.setZ(position);
         this.group.position.setX(Math.random() * 20 - 10);
-        Enemy.enemies.push(this.group);
+        // Enemy.enemies.push(this.group);
     }
 
     addTextToPlane(plane: THREE.Mesh, textValue: string, font: Font) {
@@ -90,84 +90,82 @@ export default class Enemy extends Animation {
     getRandomValue = () => Math.ceil(Math.random() * 9);
 
 
-    updateEnemy(character: Character, index: number) {
-        // super.update(this.time.delta * 0.001);
+    updateEnemy(character: Character) {
+        const characterPos = character.model?.getWorldPosition(new THREE.Vector3());
+        if (!characterPos) return false;
 
-        // Enemy.enemies.forEach((enemy, index) => {
-            if (this.group.userData.collided) {
-                return;
-            }
 
-            const characterPos = character.model?.getWorldPosition(new THREE.Vector3());
-            if (!characterPos) return;
+        const enemyPos = this.group.getWorldPosition(new THREE.Vector3());
+        // console.log(enemyPos)
 
-            const enemyPos = this.group.getWorldPosition(new THREE.Vector3());
-            if (character.model && Math.abs(enemyPos.z - characterPos.z) < 5 && character.checkCollision(this.group)) {
-                // 충돌로 인한 점수 감소 로직 추가
-                this.group.userData.collided = true;
+        if (Math.abs(enemyPos.z - characterPos.z) < 5 && character.checkCollision(this.group)) {
+            // 충돌로 인한 점수 감소 로직 추가
+            this.group.userData.collided = true;
 
-                this.world.calculateScore('-', this.group.userData.value);
-                // Enemy.enemies.splice(index, 1);
-                // TODO: 충돌로 인해 enemy 없애는 작업 추가
-                this.gameScene.remove(this.group);
-                return;
-            }
+            this.world.calculateScore('-', this.group.userData.value);
 
-            // 총알과 적의 충돌 로직
-            // character.bullets.forEach((bullet) => {
-            //     if (this.checkCollision(enemy, bullet)) {
-            //         character.bullets.splice(character.bullets.indexOf(bullet), 1);
-            //         this.gameScene.remove(bullet);
-            //         // TODO: HP 감소 로직 추가
-            //         // textMesh 업데이트하기
-            //         if (enemy.userData.value !== undefined) {
-            //             const plane = enemy.children.find(child => child instanceof THREE.Mesh) as THREE.Mesh | undefined;
-            //
-            //             if (plane) {
-            //                 enemy.userData.value -= 1;
-            //
-            //                 if (enemy.userData.value === 0) {
-            //                     // TODO: enemy HP가 0이므로 점수 추가 로직
-            //                     this.gameScene.remove(enemy);
-            //                     return;
-            //                 }
-            //
-            //                 const oldTextMesh = plane.children.find(child => child instanceof THREE.Mesh) as THREE.Mesh;
-            //                 if (oldTextMesh) {
-            //                     plane.remove(oldTextMesh);
-            //                     oldTextMesh.geometry.dispose(); // Properly dispose of old geometry
-            //                 }
-            //
-            //                 const newTextGeometry = new TextGeometry(enemy.userData.value.toString(), {
-            //                     font: this.experience.font,
-            //                     size: 1.1,
-            //                     depth: 0.1
-            //                 });
-            //                 const newTextMesh = new THREE.Mesh(newTextGeometry, new THREE.MeshBasicMaterial({ color: 0x000000 }));
-            //                 newTextMesh.position.set(-0.5, -0.5, 0.1); // Adjust position of the text on the plane
-            //
-            //                 plane.add(newTextMesh);
-            //             }
-            //         }
-            //         // character.bullets.splice(character.bullets.indexOf(bullet), 1);
-            //         // this.gameScene.remove(bullet);
-            //         // this.gameScene.remove(enemy);
-            //         return;
-            //     }
-            //
-            //     if (bullet.position.z <= -100) {
-            //         character.bullets.splice(character.bullets.indexOf(bullet), 1);
-            //         this.gameScene.remove(bullet);
-            //     }
-            // })
+            // TODO: 충돌로 인해 enemy 없애는 작업 추가
+            this.gameScene.remove(this.group);
+            return true;
+        }
 
-            if (character.model && this.group.position.z > character.model.position.z + 5) {
-                this.gameScene.remove(this.group);
-                Enemy.enemies.splice(this.group, 1);
-            }
+        // 총알과 적의 충돌 로직
+        // character.bullets.forEach((bullet) => {
+        //     if (this.checkCollision(this.group, bullet)) {
+        //         character.bullets.splice(character.bullets.indexOf(bullet), 1);
+        //         this.gameScene.remove(bullet);
+        //         // TODO: HP 감소 로직 추가
+        //         // textMesh 업데이트하기
+        //         if (this.group.userData.value === undefined) return;
+        //
+        //         const plane = this.group.children.find(child => child instanceof THREE.Mesh) as THREE.Mesh | undefined;
+        //
+        //         if (plane) {
+        //             this.group.userData.value -= 1;
+        //
+        //             if (this.group.userData.value <= 0) {
+        //                 // TODO: enemy HP가 0이므로 점수 추가 로직
+        //                 this.gameScene.remove(this.group);
+        //                 return true;
+        //             }
+        //
+        //             const oldTextMesh = plane.children.find(child => child instanceof THREE.Mesh) as THREE.Mesh;
+        //             if (oldTextMesh) {
+        //                 plane.remove(oldTextMesh);
+        //                 oldTextMesh.geometry.dispose(); // Properly dispose of old geometry
+        //             }
+        //
+        //             const newTextGeometry = new TextGeometry(this.group.userData.value.toString(), {
+        //                 font: this.experience.font,
+        //                 size: 1.1,
+        //                 depth: 0.1
+        //             });
+        //             const newTextMesh = new THREE.Mesh(newTextGeometry, new THREE.MeshBasicMaterial({ color: 0x000000 }));
+        //             newTextMesh.position.set(-0.5, -0.5, 0.1); // Adjust position of the text on the plane
+        //
+        //             plane.add(newTextMesh);
+        //         }
+        //         character.bullets.splice(character.bullets.indexOf(bullet), 1);
+        //         this.gameScene.remove(bullet);
+        //         // this.gameScene.remove(enemy);
+        //         return;
+        //     }
+        //
+        //     if (bullet.position.z <= -100) {
+        //         character.bullets.splice(character.bullets.indexOf(bullet), 1);
+        //         this.gameScene.remove(bullet);
+        //     }
+        //
+        //     if (character.model && this.group.position.z > character.model.position.z + 5) {
+        //         return true;
+        //     }
         // })
 
+
+
     }
+
+
 
     checkCollision(enemy: THREE.Object3D<THREE.Object3DEventMap>, bullet: THREE.Mesh) {
         const enemyBox = new THREE.Box3().setFromObject(enemy);
@@ -186,10 +184,6 @@ export default class Enemy extends Animation {
 
     private get gameScene() {
         return this.experience.gameScene;
-    }
-
-    private get time() {
-        return this.experience.time;
     }
 
     private get world() {
