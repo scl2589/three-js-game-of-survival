@@ -96,7 +96,6 @@ export default class Enemy extends Animation {
 
 
         const enemyPos = this.group.getWorldPosition(new THREE.Vector3());
-        // console.log(enemyPos)
 
         if (Math.abs(enemyPos.z - characterPos.z) < 5 && character.checkCollision(this.group)) {
             // 충돌로 인한 점수 감소 로직 추가
@@ -105,7 +104,12 @@ export default class Enemy extends Animation {
             this.world.calculateScore('-', this.group.userData.value);
 
             // TODO: 충돌로 인해 enemy 없애는 작업 추가
-            this.gameScene.remove(this.group);
+            // this.gameScene.remove(this.group);
+            return true;
+        }
+
+        // 캐릭터가 적을 지나쳤을 때
+        if (enemyPos.z > characterPos.z + 5) {
             return true;
         }
 

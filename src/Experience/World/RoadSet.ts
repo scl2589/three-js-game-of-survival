@@ -14,11 +14,9 @@ export default class RoadSet {
     ground: Ground;
     grass: Grass;
     sidewalk: Sidewalk;
-    enemy?: Enemy;
     enemies: Enemy[] = [];
     road: Road;
-    bannerManager?: Banner;
-    banners: THREE.Group[] = [];
+    banners: Banner[] = [];
 
     constructor() {
         this.experience = Experience.getInstance();
@@ -27,7 +25,6 @@ export default class RoadSet {
         this.grass = new Grass();
         this.sidewalk = new Sidewalk();
         this.road = new Road();
-        this.bannerManager = new Banner();
 
         this.setRoad();
     }
@@ -53,7 +50,6 @@ export default class RoadSet {
             this.group.position.z -= 600;
 
             this.clearEnemies();
-            this.clearBanners();
 
             this.setRoad();
             return;
@@ -62,6 +58,7 @@ export default class RoadSet {
         // enemy 업데이트 (deal with the collision)
         const enemiesToRemove: Enemy[] = []
         this.enemies.forEach((enemy) => {
+            if (!this.world.character) return;
             if (enemy.updateEnemy(this.world.character)) {
                 enemiesToRemove.push(enemy);
             }
@@ -70,44 +67,44 @@ export default class RoadSet {
         enemiesToRemove.forEach((enemy) => this.removeEnemy(enemy));
 
         // banner 업데이트
-        // if (this.bannerManager) {
-        //     this.bannerManager.updateBanners(this.world.character);
-        // }
-
-        this.banners.forEach((bannerGroup) => {
-            const bannerGroupPos = bannerGroup.getWorldPosition(new THREE.Vector3());
-            const characterPos = this.world.character.model?.getWorldPosition(new THREE.Vector3());
+        const bannersToRemove: Banner[] = []
+        this.banners.forEach((banner) => {
+            const bannerPos = banner.group.getWorldPosition(new THREE.Vector3());
+            const characterPos = this.world.character?.model?.getWorldPosition(new THREE.Vector3());
             if (!characterPos) return false;
 
-            const [banner1, banner2] = bannerGroup.children;
-            banner1.updateBanner();
-            banner2.updateBanner();
-
-            if (bannerGroupPos.z > characterPos.z + 5) {
-                // console.log(bannerGroupPos.z, characterPos.z)
-                this.gameScene.remove(bannerGroup);
-                this.banners.splice(this.banners.indexOf(bannerGroup), 1);
+            // 캐릭터와 banner가 충돌했을 때
+            if (Math.abs(bannerPos.z - characterPos.z) <= 1 && this.world.character?.checkCollision(banner.group)) {
+                bannersToRemove.push(banner);
+                banner.handleCollision()
+                return;
             }
 
-
-            if (bannerGroupPos.z > characterPos.z + 5) {
-                // console.log(bannerGroupPos.z, characterPos.z)
-                this.gameScene.remove(bannerGroup);
-                this.banners.splice(this.banners.indexOf(bannerGroup), 1);
+            // banner가 캐릭터 뒤로 넘어갔을 때
+            if (bannerPos.z > characterPos.z + 5) {
+                bannersToRemove.push(banner);
             }
+
+            bannersToRemove.forEach((banner) => this.removeBanner(banner))
         })
     }
 
     createBanner() {
         for (let i = 0; i < 4; i++) {
-            const bannerGroup = Banner.initBanners(-(i+1) * 50 + 20);
-            this.banners.push(bannerGroup);
-            this.group.add(bannerGroup);
+            const [x1, x2] = Banner.getNonOverlappingPositions(-10, 5, 7);
+
+            const banner1 = new Banner();
+            banner1.initBanners(x1, 2, -(i+1) * 50 + 20);
+            const banner2 = new Banner();
+            banner2.initBanners(x2, 2, -(i+1) * 50 + 20);
+
+            this.banners.push(banner1);
+            this.banners.push(banner2);
+            this.group.add(banner1.group, banner2.group);
         }
     }
 
     createEnemy() {
-        this.enemy = new Enemy(-100);
         for (let i = 0; i < 4; i++) {
             const enemy = new Enemy(-(i + 1) * 50);
             this.enemies.push(enemy);
@@ -115,9 +112,8 @@ export default class RoadSet {
         }
     }
 
-// Method to remove a single enemy and dispose its resources
+
     removeEnemy(enemy: Enemy) {
-        // Dispose of all meshes and materials
         enemy.group.traverse((child) => {
             if (child instanceof THREE.Mesh) {
                 child.geometry.dispose();
@@ -128,6 +124,15 @@ export default class RoadSet {
                 }
             }
         });
+
+
+        enemy.animationMixer?.stopAllAction();
+        enemy.animationMixer?.uncacheRoot(enemy.group!);
+
+        // enemy.group.parent?.remove(enemy.group)
+        enemy.animationMixer = undefined;
+
+        // console.log("ENMEY", enemy)
 
         // Remove from parent group and scene
         this.group.remove(enemy.group);
@@ -140,30 +145,32 @@ export default class RoadSet {
         }
     }
 
-// Method to clear all enemies at once
+    // Method to clear all enemies at once
     clearEnemies() {
         this.enemies.forEach((enemy) => this.removeEnemy(enemy));
         this.enemies = [];
     }
 
-// Method to clear all banners and dispose their resources
-    clearBanners() {
-        this.banners.forEach((banner) => {
-            banner.traverse((child) => {
-                if (child instanceof THREE.Mesh) {
-                    child.geometry.dispose();
-                    if (Array.isArray(child.material)) {
-                        child.material.forEach((mat) => mat.dispose());
-                    } else {
-                        child.material.dispose();
-                    }
+    removeBanner(banner:Banner) {
+        banner.group.traverse((child) => {
+            if (child instanceof THREE.Mesh) {
+                child.geometry.dispose();
+                if (Array.isArray(child.material)) {
+                    child.material.forEach((mat) => mat.dispose());
+                } else {
+                    child.material.dispose();
                 }
-            });
-            this.gameScene.remove(banner);
+            }
         });
-        this.banners = [];
-    }
 
+        this.group.remove(banner.group);
+        this.gameScene.remove(banner.group);
+
+        const index = this.banners.indexOf(banner);
+        if (index > -1) {
+            this.banners.splice(index, 1);
+        }
+    }
 
 
     private get world() {
