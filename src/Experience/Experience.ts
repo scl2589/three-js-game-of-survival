@@ -78,6 +78,18 @@ export default class Experience {
     });
   }
 
+  changeToGameScene() {
+    this.time.reset();
+    this.currentScene = this.startScene;
+
+    const startButton = document.getElementById('startButton');
+    const canvas: HTMLCanvasElement | null = document.querySelector('canvas.webgl');
+
+    if (!startButton || !canvas) return;
+    startButton.style.display = 'block';
+    canvas.style.display = 'none'
+  }
+
 
   initGame() {
     // Setup
@@ -161,8 +173,7 @@ export default class Experience {
     const textMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
     this.instructionsText = new THREE.Mesh(textGeometry, textMaterial);
 
-    // Position the text in the center of the screen
-    this.instructionsText.position.set(0, 5, -5); // Adjust as needed
+    this.instructionsText.position.set(0, 10, -5);
     this.gameScene.add(this.instructionsText);
   }
 

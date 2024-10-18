@@ -158,6 +158,11 @@ export default class Character extends Animation {
     this.model.position.copy(this.initialPosition);
   }
 
+  resetBullets() {
+    if (!this.bullets) return;
+    this.bullets.forEach(bullet => this.gameScene.remove(bullet));
+  }
+
   private get gameScene() {
     return this.experience.gameScene;
   }

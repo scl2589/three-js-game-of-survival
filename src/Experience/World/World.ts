@@ -2,6 +2,7 @@ import Experience from "../Experience";
 import Character from "./Character.ts";
 import Environment from "./Environment";
 import RoadSet from './RoadSet';
+import * as THREE from "three";
 
 export default class World {
   experience: Experience;
@@ -36,8 +37,6 @@ export default class World {
     const currentSpeed = this.baseSpeed * speedMultiplier;
 
     this.regenTime = 2500 / speedMultiplier / 5;
-
-
 
     this.roadSets.forEach((roadSet) => roadSet.update(currentSpeed, deltaTime));
 
@@ -81,6 +80,7 @@ export default class World {
       setTimeout(() => {
         window.alert("Game Over!\nThe game will restart once the alert is closed.");
         this.resetGame();
+        this.experience.changeToGameScene();
       }, 700);
     }
   }
@@ -88,27 +88,19 @@ export default class World {
 
   resetGame() {
     this.time.reset();
+    this.regenTime = 2500;
+
+    // remove all objects from the scene
+    this.experience.destroy();
 
     // Reset score
     this.score = 10;
     this.updateScoreDisplay();
 
-    // Reset speed and initial values
-    this.baseSpeed = 0.15;
-    this.regenTime = 2500;
-
-    // Remove all road sets
-    this.roadSets.forEach((roadSet) => {
-      this.gameScene.remove(roadSet.group);
-    });
-    this.roadSets = [];
-
-    // Re-initialize game elements
-    this.initRoadSets();
-
     if (this.character) {
       this.character.play('walking')
       this.character.resetPosition();
+      this.character.resetBullets();
     }
   }
 

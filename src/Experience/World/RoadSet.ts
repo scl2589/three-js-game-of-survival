@@ -49,8 +49,6 @@ export default class RoadSet {
         if (this.group.position.z > 300) {
             this.group.position.z -= 600;
 
-            this.clearEnemies();
-
             this.setRoad();
             return;
         }
@@ -81,9 +79,9 @@ export default class RoadSet {
             const [x1, x2] = Banner.getNonOverlappingPositions(-10, 5, 7);
 
             const banner1 = new Banner();
-            banner1.initBanners(x1, 2, -(i+1) * 50 + 20);
+            banner1.initBanners(x1, 2, -(i+1) * 50 + 25);
             const banner2 = new Banner();
-            banner2.initBanners(x2, 2, -(i+1) * 50 + 20);
+            banner2.initBanners(x2, 2, -(i+1) * 50 + 25);
 
             this.banners.push(banner1);
             this.banners.push(banner2);
@@ -128,12 +126,6 @@ export default class RoadSet {
         if (index > -1) {
             this.enemies.splice(index, 1);
         }
-    }
-
-    // Method to clear all enemies at once
-    clearEnemies() {
-        this.enemies.forEach((enemy) => this.removeEnemy(enemy));
-        this.enemies = [];
     }
 
     removeBanner(banner:Banner) {
