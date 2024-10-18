@@ -85,6 +85,26 @@ export default class Banner {
         this.group.position.set(xPosition, yPosition, zPosition);
     }
 
+    updateBanner() {
+        const bannerPos = this.group.getWorldPosition(new THREE.Vector3());
+        const characterPos = this.world.character?.model?.getWorldPosition(new THREE.Vector3());
+        if (!characterPos) return false;
+
+        // 캐릭터와 banner가 충돌했을 때
+        if (Math.abs(bannerPos.z - characterPos.z) <= 1 && this.world.character?.checkCollision(this.group)) {
+            this.handleCollision()
+            return true;
+        }
+
+        // banner가 캐릭터 뒤로 넘어갔을 때
+        if (bannerPos.z > characterPos.z + 5) {
+            return true;
+        }
+
+        return false;
+    }
+
+
     handleCollision() {
         const { operator, value } = this.group.userData;
         this.world.calculateScore(operator, value);

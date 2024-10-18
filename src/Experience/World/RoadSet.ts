@@ -69,24 +69,11 @@ export default class RoadSet {
         // banner 업데이트
         const bannersToRemove: Banner[] = []
         this.banners.forEach((banner) => {
-            const bannerPos = banner.group.getWorldPosition(new THREE.Vector3());
-            const characterPos = this.world.character?.model?.getWorldPosition(new THREE.Vector3());
-            if (!characterPos) return false;
-
-            // 캐릭터와 banner가 충돌했을 때
-            if (Math.abs(bannerPos.z - characterPos.z) <= 1 && this.world.character?.checkCollision(banner.group)) {
-                bannersToRemove.push(banner);
-                banner.handleCollision()
-                return;
-            }
-
-            // banner가 캐릭터 뒤로 넘어갔을 때
-            if (bannerPos.z > characterPos.z + 5) {
-                bannersToRemove.push(banner);
-            }
-
-            bannersToRemove.forEach((banner) => this.removeBanner(banner))
+           if (banner.updateBanner()) {
+               bannersToRemove.push(banner)
+           }
         })
+        bannersToRemove.forEach((banner) => this.removeBanner(banner))
     }
 
     createBanner() {
@@ -129,10 +116,8 @@ export default class RoadSet {
         enemy.animationMixer?.stopAllAction();
         enemy.animationMixer?.uncacheRoot(enemy.group!);
 
-        // enemy.group.parent?.remove(enemy.group)
         enemy.animationMixer = undefined;
 
-        // console.log("ENMEY", enemy)
 
         // Remove from parent group and scene
         this.group.remove(enemy.group);
