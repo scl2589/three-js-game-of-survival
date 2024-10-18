@@ -1,22 +1,14 @@
 import Experience from "../Experience";
 import Character from "./Character.ts";
-import Enemy from './Enemy';
 import Environment from "./Environment";
 import RoadSet from './RoadSet';
-import Banner from './Banner';
 
 export default class World {
   experience: Experience;
-  bannerManager?: Banner;
   roadSets: RoadSet[];
   character?: Character;
-  enemy?: Enemy;
   environment?: Environment;
   score: number;
-  enemyInitialized: boolean;
-  enemyStartTime: number;
-  bannerInitialized: boolean;
-  bannerStartTime: number;
   baseSpeed: number;
   regenTime: number;
 
@@ -24,10 +16,6 @@ export default class World {
     this.experience = Experience.getInstance();
     this.roadSets = [];
     this.score = 10;
-    this.bannerInitialized = false;
-    this.bannerStartTime = 0;
-    this.enemyInitialized = false;
-    this.enemyStartTime = 0;
     this.baseSpeed = 0.15
     this.regenTime = 2500;
 
@@ -35,9 +23,6 @@ export default class World {
       this.initRoadSets();
       this.character = new Character();
       this.environment = new Environment();
-
-      this.bannerStartTime = this.time.elapsed;
-      this.enemyStartTime = this.time.elapsed;
     });
   }
 
@@ -58,17 +43,6 @@ export default class World {
 
     if (this.character) {
       this.character.update();
-
-      // Trigger banner initialization after 2.5 seconds
-      if (!this.bannerInitialized && (this.time.elapsed - this.bannerStartTime) > this.regenTime) {
-        this.bannerManager = new Banner();
-        this.bannerInitialized = true;
-      }
-
-      // Update banners if they exist
-      if (this.bannerManager) {
-        this.bannerManager.updateBanners(this.character, currentSpeed);
-      }
     }
   }
 
@@ -137,13 +111,6 @@ export default class World {
       this.character.resetPosition();
     }
 
-    if (this.bannerManager) {
-      Banner.banners.forEach((bannerGroup) => {
-        this.gameScene.remove(bannerGroup);
-      });
-      Banner.banners = [];
-      Banner.lastBannerTime = this.time.elapsed;
-    }
   }
 
   private get gameScene() {

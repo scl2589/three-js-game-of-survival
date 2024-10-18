@@ -21,6 +21,13 @@ export default class Banner {
     constructor() {
         this.experience = Experience.getInstance();
         this.group = new THREE.Group();
+
+        // this.setGeometry();
+        // this.setMaterial();
+        // this.setMesh();
+    }
+
+    createBanner() {
         this.setGeometry();
         this.setMaterial();
         this.setMesh();
@@ -65,6 +72,8 @@ export default class Banner {
         Banner.banners.push(this.group);
     }
 
+
+
     async addTextToPlane(plane: THREE.Mesh, textValue: string, font: Font) {
         const textGeometry = new TextGeometry(textValue, { font: font, size: 1.8, depth: 0.1 });
         const textMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
@@ -78,52 +87,52 @@ export default class Banner {
     getRandomValue = () => Math.floor(Math.random() * 9);
     getRandomColor = () => `#${Math.floor(Math.random() * 0xFFFFFF).toString(16).padStart(6, '0')}`;
 
-    static initBanners(gameScene: THREE.Scene) {
+    static initBanners(zPosition: number) {
         const banner1 = new Banner();
+        banner1.createBanner()
         const banner2 = new Banner();
+        banner2.createBanner();
 
         const [x1, x2] = this.getNonOverlappingPositions(-10, 5, 7);
 
-        banner1.group.position.set(x1, 2, 0);
-        banner2.group.position.set(x2, 2, 0);
+        banner1.group.position.set(x1, 2, zPosition);
+        banner2.group.position.set(x2, 2, zPosition);
 
         const bannerGroup = new THREE.Group();
         bannerGroup.add(banner1.group, banner2.group);
 
         Banner.banners.push(bannerGroup);
-        bannerGroup.position.z = -200;
-        gameScene.add(bannerGroup);
+        return bannerGroup;
+        // gameScene.add(bannerGroup);
     }
 
-    updateBanners(character: Character, baseSpeed: number) {
-        if (this.time.elapsed - Banner.lastBannerTime > Banner.bannerInterval) {
-            Banner.initBanners(this.gameScene);
-            Banner.lastBannerTime = this.time.elapsed;
-        }
-
+    updateBanners(character: Character) {
+        const characterPos = character.model?.getWorldPosition(new THREE.Vector3());
+        if (!characterPos) return false;
+        // console.log("Banner.banners", Banner.banners);
         Banner.banners.forEach((bannerGroup, index) => {
-            bannerGroup.position.z += baseSpeed * 2;
-
+            const bannerGroupPos = bannerGroup.getWorldPosition(new THREE.Vector3());
             for (let j = 0; j < bannerGroup.children.length; j++) {
                 const banner = bannerGroup.children[j] ;
-
-                if (character.model && banner.position.z >= character.model.position.z && character.checkCollision(banner)) {
-                    this.handleCollision(banner);
-                    bannerGroup.remove(banner);
+                const bannerPos = banner.getWorldPosition(new THREE.Vector3());
+                if (character.model && Math.abs(bannerPos.z - characterPos.z) <= 1 && character.checkCollision(banner)) {
+                    this.handleCollision(banner, bannerGroup);
+                    // bannerGroup.remove(banner);
                 }
             }
-
-            if (character.model && bannerGroup.position.z > character.model.position.z + 5) {
+            // 캐릭터를 지났으면 제거하기 :)
+            if (character.model && bannerGroupPos.z > characterPos.z + 5) {
                 this.gameScene.remove(bannerGroup);
                 Banner.banners.splice(index, 1);
             }
         });
     }
 
-    handleCollision(banner: THREE.Object3D<THREE.Object3DEventMap>) {
+    handleCollision(banner: THREE.Object3D<THREE.Object3DEventMap>, bannerGroup) {
         const { operator, value } = banner.userData;
         this.world.calculateScore(operator, value)
         this.gameScene.remove(banner);
+        bannerGroup.remove(banner);
     }
 
     static getNonOverlappingPositions(minX: number, maxX:number, minDistance:number) {
