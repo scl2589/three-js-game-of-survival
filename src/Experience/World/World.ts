@@ -110,7 +110,6 @@ export default class World {
       this.character.play('walking')
       this.character.resetPosition();
     }
-
   }
 
   private get gameScene() {

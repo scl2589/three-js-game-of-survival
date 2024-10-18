@@ -113,63 +113,53 @@ export default class Enemy extends Animation {
             return true;
         }
 
+        let isCollided = false;
+
         // 총알과 적의 충돌 로직
-        // character.bullets.forEach((bullet) => {
-        //     if (this.checkCollision(this.group, bullet)) {
-        //         character.bullets.splice(character.bullets.indexOf(bullet), 1);
-        //         this.gameScene.remove(bullet);
-        //         // TODO: HP 감소 로직 추가
-        //         // textMesh 업데이트하기
-        //         if (this.group.userData.value === undefined) return;
-        //
-        //         const plane = this.group.children.find(child => child instanceof THREE.Mesh) as THREE.Mesh | undefined;
-        //
-        //         if (plane) {
-        //             this.group.userData.value -= 1;
-        //
-        //             if (this.group.userData.value <= 0) {
-        //                 // TODO: enemy HP가 0이므로 점수 추가 로직
-        //                 this.gameScene.remove(this.group);
-        //                 return true;
-        //             }
-        //
-        //             const oldTextMesh = plane.children.find(child => child instanceof THREE.Mesh) as THREE.Mesh;
-        //             if (oldTextMesh) {
-        //                 plane.remove(oldTextMesh);
-        //                 oldTextMesh.geometry.dispose(); // Properly dispose of old geometry
-        //             }
-        //
-        //             const newTextGeometry = new TextGeometry(this.group.userData.value.toString(), {
-        //                 font: this.experience.font,
-        //                 size: 1.1,
-        //                 depth: 0.1
-        //             });
-        //             const newTextMesh = new THREE.Mesh(newTextGeometry, new THREE.MeshBasicMaterial({ color: 0x000000 }));
-        //             newTextMesh.position.set(-0.5, -0.5, 0.1); // Adjust position of the text on the plane
-        //
-        //             plane.add(newTextMesh);
-        //         }
-        //         character.bullets.splice(character.bullets.indexOf(bullet), 1);
-        //         this.gameScene.remove(bullet);
-        //         // this.gameScene.remove(enemy);
-        //         return;
-        //     }
-        //
-        //     if (bullet.position.z <= -100) {
-        //         character.bullets.splice(character.bullets.indexOf(bullet), 1);
-        //         this.gameScene.remove(bullet);
-        //     }
-        //
-        //     if (character.model && this.group.position.z > character.model.position.z + 5) {
-        //         return true;
-        //     }
-        // })
+        character.bullets.forEach((bullet) => {
+            if (this.checkCollision(this.group, bullet)) {
+                // bullet 제거
+                character.bullets.splice(character.bullets.indexOf(bullet), 1);
+                this.gameScene.remove(bullet);
 
+                const plane = this.group.children.find(child => child instanceof THREE.Mesh) as THREE.Mesh | undefined;
 
+                if (this.group.userData.value === undefined || !plane) return;
 
+                this.group.userData.value -= 1;
+
+                // 적의 HP가 0이므로 점수 추가
+                if (this.group.userData.value <= 0) {
+                    this.world.calculateScore('+', 100)
+                    isCollided = true;
+                    return
+                }
+
+                // 총알에 맞았으므로 적의 HP 감소
+                const oldTextMesh = plane.children.find(child => child instanceof THREE.Mesh) as THREE.Mesh;
+                if (oldTextMesh) {
+                    plane.remove(oldTextMesh);
+                    oldTextMesh.geometry.dispose(); // Properly dispose of old geometry
+                }
+
+                const newTextGeometry = new TextGeometry(this.group.userData.value.toString(), {
+                    font: this.experience.font,
+                    size: 1.1,
+                    depth: 0.1
+                });
+                const newTextMesh = new THREE.Mesh(newTextGeometry, new THREE.MeshBasicMaterial({ color: 0x000000 }));
+                newTextMesh.position.set(-0.5, -0.5, 0.1); // Adjust position of the text on the plane
+
+                plane.add(newTextMesh);
+            }
+
+            if (bullet.position.z <= -50) {
+                character.bullets.splice(character.bullets.indexOf(bullet), 1);
+                this.gameScene.remove(bullet);
+            }
+        })
+        return isCollided;
     }
-
-
 
     checkCollision(enemy: THREE.Object3D<THREE.Object3DEventMap>, bullet: THREE.Mesh) {
         const enemyBox = new THREE.Box3().setFromObject(enemy);

@@ -147,7 +147,7 @@ export default class Experience {
     const textGeometry = new TextGeometry("Use < > keys to move\nUse spacebar to shoot", {
       font: this.font,
       size: 2,
-      height: 0.1,
+      depth: 0.1,
       curveSegments: 12,
       bevelEnabled: true,
       bevelThickness: 0.1,

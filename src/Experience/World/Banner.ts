@@ -64,8 +64,6 @@ export default class Banner {
         this.group.add(pole1, pole2, plane);
     }
 
-
-
     async addTextToPlane(plane: THREE.Mesh, textValue: string, font: Font) {
         const textGeometry = new TextGeometry(textValue, { font: font, size: 1.8, depth: 0.1 });
         const textMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
