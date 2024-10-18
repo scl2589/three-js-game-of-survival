@@ -1,8 +1,25 @@
+import { initializeApp } from "firebase/app";
+import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
+
 import Experience from "../Experience";
 import Character from "./Character.ts";
 import Environment from "./Environment";
 import RoadSet from './RoadSet';
-import * as THREE from "three";
+
+const firebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
+};
+
+const app = initializeApp(firebaseConfig);
+
+// Initialize Cloud Firestore and get a reference to the service
+const db = getFirestore(app);
 
 export default class World {
   experience: Experience;
@@ -77,8 +94,21 @@ export default class World {
     if (this.score <= 0 && this.character) {
       this.character.play('death');
 
-      setTimeout(() => {
-        window.alert("Game Over!\nThe game will restart once the alert is closed.");
+      setTimeout(async() => {
+        const score = this.time.elapsed
+        const nickname = prompt(`Game Over!\nYour score is: ${score}\nPlease type your nickname for your ranking.`);
+        if (nickname) {
+          // add to the db
+          const userRef = doc(db, "scoreboard", nickname);
+          const userSnap = await getDoc(userRef);
+
+          if (!userSnap.exists() || userSnap.data().score < score) {
+            await setDoc(userRef, {
+              score: score,
+              timestamp: new Date()
+            });
+          }
+        }
         this.resetGame();
         this.experience.changeToGameScene();
       }, 700);

@@ -99,12 +99,7 @@ export default class Enemy extends Animation {
 
         if (Math.abs(enemyPos.z - characterPos.z) < 5 && character.checkCollision(this.group)) {
             // 충돌로 인한 점수 감소 로직 추가
-            this.group.userData.collided = true;
-
-            this.world.calculateScore('-', this.group.userData.value);
-
-            // TODO: 충돌로 인해 enemy 없애는 작업 추가
-            // this.gameScene.remove(this.group);
+            this.world.calculateScore('-', Math.max(this.world.score * 0.2, this.group.userData.value));
             return true;
         }
 
