@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
+import { getFirestore, doc, getDoc, getDocs, setDoc, collection, query, orderBy } from "firebase/firestore";
 
 import Experience from "../Experience";
 import Character from "./Character.ts";
@@ -18,7 +18,6 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
-// Initialize Cloud Firestore and get a reference to the service
 const db = getFirestore(app);
 
 export default class World {
@@ -36,6 +35,8 @@ export default class World {
     this.score = 10;
     this.baseSpeed = 0.15
     this.regenTime = 2500;
+
+    this.addScoreboard();
 
     this.resources.on("ready", () => {
       this.initRoadSets();
@@ -109,6 +110,7 @@ export default class World {
             });
           }
         }
+        await this.addScoreboard();
         this.resetGame();
         this.experience.changeToGameScene();
       }, 700);
@@ -131,6 +133,38 @@ export default class World {
       this.character.play('walking')
       this.character.resetPosition();
       this.character.resetBullets();
+    }
+  }
+
+  async addScoreboard() {
+    const scores = await this.getAllScores();
+
+    const scoreboard = document.querySelector('.scoreboard');
+    if (!scoreboard || !scores) return;
+    scoreboard.textContent = '';
+
+    scores.map((rank, index) => {
+        const scoreElement = document.createElement('div');
+        scoreElement.classList.add('score');
+        scoreElement.textContent = `${index + 1}. ${rank.nickname}: ${rank.score}`;
+        scoreboard?.appendChild(scoreElement);
+    })
+  }
+
+  // Function to get all scores
+  async getAllScores() {
+    const scoresRef = collection(db, "scoreboard");
+    const q = query(scoresRef, orderBy("score", "desc"));
+
+    try {
+      const querySnapshot = await getDocs(q);
+      const scores = querySnapshot.docs.map(doc => ({
+        nickname: doc.id,
+        score: doc.data().score,
+      }));
+      return scores;
+    } catch (error) {
+      console.error("Error fetching scores:", error);
     }
   }
 

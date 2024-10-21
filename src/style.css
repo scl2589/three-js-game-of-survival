@@ -5,9 +5,11 @@
 }
 
 html,
-body
+body,
+.startScene
 {
     overflow: hidden;
+    height: 100vh;
 }
 
 .webgl
@@ -18,11 +20,28 @@ body
     outline: none;
 }
 
+.startScene {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.gameTitle {
+    margin-bottom: 30px;
+}
+
+.scoreboard {
+    text-align: left;
+    margin-bottom: 30px;
+}
+
+.scoreboard h3 {
+    margin-bottom: 10px;
+
+}
+
 #startButton {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
     padding: 15px 30px;
     font-size: 18px;
     background-color: #FFF7AA;
