@@ -139,15 +139,30 @@ export default class World {
   async addScoreboard() {
     const scores = await this.getAllScores();
 
-    const scoreboard = document.querySelector('.scoreboard');
+    const scoreboard = document.querySelector('.scores');
     if (!scoreboard || !scores) return;
     scoreboard.textContent = '';
 
     scores.map((rank, index) => {
-        const scoreElement = document.createElement('div');
-        scoreElement.classList.add('score');
-        scoreElement.textContent = `${index + 1}. ${rank.nickname}: ${rank.score}`;
-        scoreboard?.appendChild(scoreElement);
+      const containerElement = document.createElement('div');
+      containerElement.classList.add('score-container');
+
+      const rankElement = document.createElement('div');
+      rankElement.classList.add('ranking');
+      rankElement.textContent = `${index+ 1}. `;
+
+      const nicknameElement = document.createElement('div');
+      nicknameElement.classList.add('nickname');
+      nicknameElement.textContent = `${rank.nickname}`;
+
+      const scoreElement = document.createElement('div');
+      scoreElement.classList.add('score');
+      scoreElement.textContent = `${rank.score.toLocaleString()}`;
+
+      containerElement.appendChild(rankElement)
+      containerElement.appendChild(nicknameElement);
+      containerElement.appendChild(scoreElement)
+      scoreboard?.appendChild(containerElement);
     })
   }
 
