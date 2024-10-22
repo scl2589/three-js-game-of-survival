@@ -140,6 +140,9 @@ export default class World {
       const containerElement = document.createElement('div');
       containerElement.classList.add('score-container');
 
+      const leftElement = document.createElement('div');
+      leftElement.classList.add('nickname-container')
+
       const rankElement = document.createElement('div');
       rankElement.classList.add('ranking');
       rankElement.textContent = `${index+ 1}. `;
@@ -148,12 +151,14 @@ export default class World {
       nicknameElement.classList.add('nickname');
       nicknameElement.textContent = `${rank.nickname}`;
 
+      leftElement.appendChild(rankElement)
+      leftElement.appendChild(nicknameElement)
+
       const scoreElement = document.createElement('div');
       scoreElement.classList.add('score');
       scoreElement.textContent = `${rank.score.toLocaleString()}`;
 
-      containerElement.appendChild(rankElement)
-      containerElement.appendChild(nicknameElement);
+      containerElement.appendChild(leftElement)
       containerElement.appendChild(scoreElement)
       scoreboard?.appendChild(containerElement);
     })
@@ -192,7 +197,7 @@ export default class World {
 
         if (!userSnap.exists() || userSnap.data().score < this.score) {
           await setDoc(userRef, {
-            score: this.score,
+            score: Math.floor(this.score),
             timestamp: new Date()
           });
         }
