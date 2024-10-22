@@ -78,22 +78,25 @@ export default class Experience {
     });
   }
 
-  changeToGameScene() {
+  changeToStartScene() {
     this.time.reset();
     this.currentScene = this.startScene;
 
+    const scoreElement = document.getElementById('score');
     const startButton = document.getElementById('startButton');
     const canvas: HTMLCanvasElement | null = document.querySelector('canvas.webgl');
 
-    if (!startButton || !canvas) return;
+    if (!startButton || !canvas || !scoreElement) return;
     startButton.style.display = 'block';
     canvas.style.display = 'none'
+    scoreElement.style.display = 'none';
   }
 
 
   initGame() {
     // Setup
     this.gameScene.background = new THREE.Color(0xAFC5FF)
+    this.showScore();
 
     // Sizes resize event
     this.sizes.on("resize", () => this.resize());
@@ -127,6 +130,12 @@ export default class Experience {
         this.instructionsText = undefined;
       }
     }, 5000);
+  }
+
+  showScore() {
+    const scoreElement = document.getElementById('score');
+    if (!scoreElement) return;
+    scoreElement.style.display = 'block';
   }
 
   resize() {

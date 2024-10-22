@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, doc, getDoc, getDocs, setDoc, collection, query, orderBy } from "firebase/firestore";
+import { getFirestore, doc, getDoc, getDocs, setDoc, collection, query, orderBy, limit } from "firebase/firestore";
 
 import Experience from "../Experience";
 import Character from "./Character.ts";
@@ -111,8 +111,8 @@ export default class World {
           }
         }
         await this.addScoreboard();
+        this.experience.changeToStartScene();
         this.resetGame();
-        this.experience.changeToGameScene();
       }, 700);
     }
   }
@@ -126,7 +126,7 @@ export default class World {
     this.experience.destroy();
 
     // Reset score
-    this.score = 10;
+    this.score = 10.0;
     this.updateScoreDisplay();
 
     if (this.character) {
@@ -169,7 +169,7 @@ export default class World {
   // Function to get all scores
   async getAllScores() {
     const scoresRef = collection(db, "scoreboard");
-    const q = query(scoresRef, orderBy("score", "desc"));
+    const q = query(scoresRef, orderBy("score", "desc"), limit(10));
 
     try {
       const querySnapshot = await getDocs(q);
