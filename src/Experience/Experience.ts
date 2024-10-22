@@ -26,6 +26,7 @@ export default class Experience {
   currentScene: THREE.Scene;
   font?: Font;
   instructionsText?: THREE.Mesh;
+  remainingTime: number;
 
   static instance: Experience;
   static getInstance(canvas?: HTMLCanvasElement) {
@@ -60,6 +61,7 @@ export default class Experience {
     this.currentScene = this.startScene;
     this.camera = new Camera();
     this.loadFont();
+    this.remainingTime = 30;
 
     this.addClickEvent();
   }
@@ -82,21 +84,21 @@ export default class Experience {
     this.time.reset();
     this.currentScene = this.startScene;
 
-    const scoreElement = document.getElementById('score');
+    const gameInfoElement = document.getElementById('gameInfo');
     const startButton = document.getElementById('startButton');
     const canvas: HTMLCanvasElement | null = document.querySelector('canvas.webgl');
 
-    if (!startButton || !canvas || !scoreElement) return;
+    if (!startButton || !canvas || !gameInfoElement) return;
     startButton.style.display = 'block';
     canvas.style.display = 'none'
-    scoreElement.style.display = 'none';
+    gameInfoElement.style.display = 'none';
   }
 
 
   initGame() {
     // Setup
     this.gameScene.background = new THREE.Color(0xAFC5FF)
-    this.showScore();
+    this.showGameInfo();
 
     // Sizes resize event
     this.sizes.on("resize", () => this.resize());
@@ -104,6 +106,8 @@ export default class Experience {
     // Reset time and time tick event
     this.time.reset();
     this.time.on("tick", () => this.update());
+
+    this.updateCountdown();
 
     // instructions
     this.createInstructionsText();
@@ -132,10 +136,10 @@ export default class Experience {
     }, 5000);
   }
 
-  showScore() {
-    const scoreElement = document.getElementById('score');
-    if (!scoreElement) return;
-    scoreElement.style.display = 'block';
+  showGameInfo() {
+    const gameInfoElement = document.getElementById('gameInfo');
+    if (!gameInfoElement) return;
+    gameInfoElement.style.display = 'block';
   }
 
   resize() {
@@ -184,6 +188,25 @@ export default class Experience {
 
     this.instructionsText.position.set(0, 10, -5);
     this.gameScene.add(this.instructionsText);
+  }
+
+  updateCountdown() {
+    const countdownInterval = setInterval(() => {
+      if (this.remainingTime < 1) {
+        this.world.endGame();
+        return;
+      }
+
+      this.remainingTime -= 1
+
+      const countdownElement = document.getElementById('countdown');
+      if (!countdownElement) return;
+      countdownElement.textContent = `Time: ${this.remainingTime}`;
+    }, 1000);
+
+    setTimeout(() => {
+        clearInterval(countdownInterval);
+    }, 31000)
   }
 
   destroy() {

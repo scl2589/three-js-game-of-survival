@@ -81,11 +81,24 @@ body,
     transition: transform 0.3s ease-out;
 }
 
-#score {
+#gameInfo {
     display: none;
+}
+
+#score {
     position: absolute;
     top: 20px;
     left: 20px;
+    font-size: 24px;
+    color: white;
+    font-family: "Rubik Dirt", system-ui;
+    z-index: 100;
+}
+
+#countdown {
+    position: absolute;
+    top: 20px;
+    right: 20px;
     font-size: 24px;
     color: white;
     font-family: "Rubik Dirt", system-ui;

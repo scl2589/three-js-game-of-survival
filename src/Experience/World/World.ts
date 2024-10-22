@@ -36,7 +36,7 @@ export default class World {
     this.baseSpeed = 0.15
     this.regenTime = 2500;
 
-    this.addScoreboard();
+    this.updateLeaderboard();
 
     this.resources.on("ready", () => {
       this.initRoadSets();
@@ -92,28 +92,8 @@ export default class World {
     }
     this.updateScoreDisplay();
 
-    if (this.score <= 0 && this.character) {
-      this.character.play('death');
-
-      setTimeout(async() => {
-        const score = this.time.elapsed
-        const nickname = prompt(`Game Over!\nYour score is: ${score}\nPlease type your nickname for your ranking.`);
-        if (nickname) {
-          // add to the db
-          const userRef = doc(db, "scoreboard", nickname);
-          const userSnap = await getDoc(userRef);
-
-          if (!userSnap.exists() || userSnap.data().score < score) {
-            await setDoc(userRef, {
-              score: score,
-              timestamp: new Date()
-            });
-          }
-        }
-        await this.addScoreboard();
-        this.experience.changeToStartScene();
-        this.resetGame();
-      }, 700);
+    if (this.score <= 0) {
+        this.endGame();
     }
   }
 
@@ -127,6 +107,7 @@ export default class World {
 
     // Reset score
     this.score = 10.0;
+    this.experience.remainingTime = 30;
     this.updateScoreDisplay();
 
     if (this.character) {
@@ -136,7 +117,7 @@ export default class World {
     }
   }
 
-  async addScoreboard() {
+  async updateLeaderboard() {
     const scores = await this.getAllScores();
 
     const scoreboard = document.querySelector('.scores');
@@ -181,6 +162,30 @@ export default class World {
     } catch (error) {
       console.error("Error fetching scores:", error);
     }
+  }
+
+  endGame() {
+    if (!this.character) return;
+    this.character.play('death');
+
+    setTimeout(async() => {
+      const nickname = prompt(`Game Over!\nYour score is: ${this.score}\nPlease type your nickname for your ranking.`);
+      if (nickname) {
+        // add to the db
+        const userRef = doc(db, "scoreboard", nickname);
+        const userSnap = await getDoc(userRef);
+
+        if (!userSnap.exists() || userSnap.data().score < this.score) {
+          await setDoc(userRef, {
+            score: this.score,
+            timestamp: new Date()
+          });
+        }
+      }
+      await this.updateLeaderboard();
+      this.experience.changeToStartScene();
+      this.resetGame();
+    }, 700);
   }
 
   private get gameScene() {
