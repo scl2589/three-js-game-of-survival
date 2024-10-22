@@ -119,7 +119,7 @@ export default class Enemy extends Animation {
 
                 const plane = this.group.children.find(child => child instanceof THREE.Mesh) as THREE.Mesh | undefined;
 
-                if (this.group.userData.value === undefined || !plane) return;
+                if (this.group.userData.value === undefined || !plane || !this.experience.font) return;
 
                 this.group.userData.value -= 1;
 
