@@ -28,6 +28,7 @@ export default class World {
   score: number;
   baseSpeed: number;
   regenTime: number;
+  gameStatus: string;
 
   constructor() {
     this.experience = Experience.getInstance();
@@ -35,6 +36,7 @@ export default class World {
     this.score = 10;
     this.baseSpeed = 0.15
     this.regenTime = 2500;
+    this.gameStatus = 'start'
 
     this.updateLeaderboard();
 
@@ -83,6 +85,14 @@ export default class World {
     }
   }
 
+
+  updateRemainingTime() {
+    const scoreElement = document.getElementById('countdown');
+    if (scoreElement) {
+      scoreElement.textContent = `Time: ${this.experience.remainingTime}`;
+    }
+  }
+
   calculateScore(operator: string, value: number) {
     switch (operator) {
       case '+': this.score += value; break;
@@ -108,6 +118,9 @@ export default class World {
     this.score = 10.0;
     this.experience.remainingTime = 31;
     this.updateScoreDisplay();
+    this.updateRemainingTime();
+
+    this.gameStatus = 'start'
 
     if (this.character) {
       this.character.play('walking')
@@ -164,7 +177,10 @@ export default class World {
   }
 
   endGame() {
-    if (!this.character) return;
+    if (this.gameStatus === 'end' || !this.character) return;
+    this.gameStatus = 'end';
+
+    this.experience.playEndSound();
     this.character.play('death');
 
     setTimeout(async() => {

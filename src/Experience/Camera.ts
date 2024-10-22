@@ -7,9 +7,11 @@ export default class Camera {
   experience: Experience;
   instance?: THREE.PerspectiveCamera;
   controls?: OrbitControls;
+  listener: THREE.AudioListener
 
   constructor() {
     this.experience = Experience.getInstance();
+    this.listener = new THREE.AudioListener();
 
     this.setInstance();
     this.setOrbitControls();
@@ -23,6 +25,7 @@ export default class Camera {
       150
     );
     this.instance.position.set(0, 200, 800);
+    this.instance.add(this.listener);
     this.gameScene.add(this.instance);
   }
   setOrbitControls() {

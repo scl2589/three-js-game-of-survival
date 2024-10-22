@@ -28,6 +28,9 @@ export default class Experience {
   instructionsText?: THREE.Mesh;
   remainingTime: number;
   countdownInterval?: ReturnType<typeof setInterval>;
+  startSound?: THREE.Audio;
+  gameSound?: THREE.Audio;
+  endSound?: THREE.Audio;
 
   static instance: Experience;
   static getInstance(canvas?: HTMLCanvasElement) {
@@ -63,6 +66,7 @@ export default class Experience {
     this.camera = new Camera();
     this.loadFont();
     this.remainingTime = 30;
+    this.loadSounds();
 
     this.addClickEvent();
   }
@@ -73,10 +77,15 @@ export default class Experience {
       const canvas: HTMLCanvasElement | null = document.querySelector('canvas.webgl');
 
       startButton?.addEventListener('click', () => {
-        startButton.style.display = 'none';
-        canvas ? canvas.style.display = 'block' : null;
+        this.playStartSound();
 
-        this.initGame();
+        setTimeout(() => {
+          startButton.style.display = 'none';
+          canvas ? canvas.style.display = 'block' : null;
+
+          this.initGame();
+        }, 1000);
+
       });
     });
   }
@@ -100,6 +109,7 @@ export default class Experience {
     // Setup
     this.gameScene.background = new THREE.Color(0xAFC5FF)
     this.showGameInfo();
+    this.playGameSound();
 
     // Sizes resize event
     this.sizes.on("resize", () => this.resize());
@@ -213,7 +223,52 @@ export default class Experience {
 
     setTimeout(() => {
         clearInterval(this.countdownInterval);
-    }, 30000)
+    }, 31000)
+  }
+
+  loadSounds() {
+    const audioLoader = new THREE.AudioLoader();
+    const listener = new THREE.AudioListener();
+
+    this.startSound = new THREE.Audio(listener);
+    audioLoader.load('/sounds/game_start.mp3', (buffer) => {
+      this.startSound?.setBuffer(buffer);
+      this.startSound?.setVolume(0.5);
+    });
+
+    this.gameSound = new THREE.Audio(listener);
+    audioLoader.load('/sounds/bgm.mp3', (buffer) => {
+      this.gameSound?.setBuffer(buffer);
+      this.gameSound?.setLoop(true);
+      this.gameSound?.setVolume(0.5);
+    });
+
+    this.endSound = new THREE.Audio(listener);
+    audioLoader.load('/sounds/game_over.mp3', (buffer) => {
+      this.endSound?.setBuffer(buffer);
+      this.endSound?.setVolume(0.5);
+    });
+  }
+
+  playStartSound() {
+    this.stopAllSounds();
+    this.startSound?.play();
+  }
+
+  playGameSound() {
+    this.stopAllSounds();
+    this.gameSound?.play();
+  }
+
+  playEndSound() {
+    this.stopAllSounds();
+    this.endSound?.play();
+  }
+
+  stopAllSounds() {
+    this.startSound?.stop();
+    this.gameSound?.stop();
+    this.endSound?.stop();
   }
 
   destroy() {
