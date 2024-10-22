@@ -40,6 +40,7 @@ body,
 }
 
 .scoreboard {
+    height: 330.5px;
     text-align: left;
     margin-bottom: 30px;
     color: white;

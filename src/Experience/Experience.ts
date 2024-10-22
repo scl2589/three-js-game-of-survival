@@ -27,6 +27,7 @@ export default class Experience {
   font?: Font;
   instructionsText?: THREE.Mesh;
   remainingTime: number;
+  countdownInterval?: ReturnType<typeof setInterval>;
 
   static instance: Experience;
   static getInstance(canvas?: HTMLCanvasElement) {
@@ -112,28 +113,7 @@ export default class Experience {
     // instructions
     this.createInstructionsText();
 
-    setTimeout(() => {
-      if (this.instructionsText) {
-        this.gameScene.remove(this.instructionsText);
-
-        // Dispose of geometry and material
-        this.instructionsText.geometry.dispose();
-        const materials = this.instructionsText.material;
-        if (Array.isArray(materials)) {
-          materials.forEach((material) => {
-            if (material && typeof material.dispose === "function") {
-              material.dispose();
-            }
-          });
-        } else {
-          if (materials && typeof materials.dispose === "function") {
-            materials.dispose();
-          }
-        }
-        // Clear the reference
-        this.instructionsText = undefined;
-      }
-    }, 5000);
+    this.hideInstructionsText();
   }
 
   showGameInfo() {
@@ -190,8 +170,35 @@ export default class Experience {
     this.gameScene.add(this.instructionsText);
   }
 
+  hideInstructionsText() {
+    setTimeout(() => {
+      if (this.instructionsText) {
+        this.gameScene.remove(this.instructionsText);
+
+        // Dispose of geometry and material
+        this.instructionsText.geometry.dispose();
+        const materials = this.instructionsText.material;
+        if (Array.isArray(materials)) {
+          materials.forEach((material) => {
+            if (material && typeof material.dispose === "function") {
+              material.dispose();
+            }
+          });
+        } else {
+          if (materials && typeof materials.dispose === "function") {
+            materials.dispose();
+          }
+        }
+        // Clear the reference
+        this.instructionsText = undefined;
+      }
+    }, 5000);
+  }
+
   updateCountdown() {
-    const countdownInterval = setInterval(() => {
+    if (this.countdownInterval) clearInterval(this.countdownInterval);
+
+    this.countdownInterval = setInterval(() => {
       if (this.remainingTime < 1) {
         this.world.endGame();
         return;
@@ -205,8 +212,8 @@ export default class Experience {
     }, 1000);
 
     setTimeout(() => {
-        clearInterval(countdownInterval);
-    }, 31000)
+        clearInterval(this.countdownInterval);
+    }, 30000)
   }
 
   destroy() {

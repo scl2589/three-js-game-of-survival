@@ -99,7 +99,6 @@ export default class World {
 
 
   resetGame() {
-    this.time.reset();
     this.regenTime = 2500;
 
     // remove all objects from the scene
@@ -107,7 +106,7 @@ export default class World {
 
     // Reset score
     this.score = 10.0;
-    this.experience.remainingTime = 30;
+    this.experience.remainingTime = 31;
     this.updateScoreDisplay();
 
     if (this.character) {
@@ -182,9 +181,9 @@ export default class World {
           });
         }
       }
+      this.resetGame();
       await this.updateLeaderboard();
       this.experience.changeToStartScene();
-      this.resetGame();
     }, 700);
   }
 
