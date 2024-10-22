@@ -31,6 +31,7 @@ export default class Experience {
   startSound?: THREE.Audio;
   gameSound?: THREE.Audio;
   endSound?: THREE.Audio;
+  timeoutRef?: ReturnType<typeof setTimeout>
 
   static instance: Experience;
   static getInstance(canvas?: HTMLCanvasElement) {
@@ -64,8 +65,8 @@ export default class Experience {
     this.startScene = new THREE.Scene();
     this.currentScene = this.startScene;
     this.camera = new Camera();
-    this.loadFont();
     this.remainingTime = 30;
+    this.loadFont();
     this.loadSounds();
 
     this.addClickEvent();
@@ -206,7 +207,10 @@ export default class Experience {
   }
 
   updateCountdown() {
-    if (this.countdownInterval) clearInterval(this.countdownInterval);
+    if (this.countdownInterval) {
+      clearInterval(this.countdownInterval);
+      this.countdownInterval = undefined;
+    }
 
     this.countdownInterval = setInterval(() => {
       if (this.remainingTime < 1) {
@@ -221,9 +225,16 @@ export default class Experience {
       countdownElement.textContent = `Time: ${this.remainingTime}`;
     }, 1000);
 
-    setTimeout(() => {
+    if (this.timeoutRef) {
+      clearTimeout(this.timeoutRef);
+      this.timeoutRef = undefined;
+    }
+
+
+    this.timeoutRef = setTimeout(() => {
         clearInterval(this.countdownInterval);
-    }, 31000)
+        this.countdownInterval = undefined;
+    }, 32000)
   }
 
   loadSounds() {

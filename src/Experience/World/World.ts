@@ -111,12 +111,17 @@ export default class World {
   resetGame() {
     this.regenTime = 2500;
 
+    if (this.experience.countdownInterval) {
+      clearInterval(this.experience.countdownInterval);
+      this.experience.countdownInterval = undefined;
+    }
+
     // remove all objects from the scene
     this.experience.destroy();
 
     // Reset score
     this.score = 10.0;
-    this.experience.remainingTime = 31;
+    this.experience.remainingTime = 30;
     this.updateScoreDisplay();
     this.updateRemainingTime();
 
